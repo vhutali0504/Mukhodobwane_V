@@ -112,7 +112,7 @@ export const profile = {
   ],
 
   skills: {
-    Languages: ["JavaScript ES6+", "Java", "C++", "C#", "SQL"],
+    Languages: ["JavaScript ES6+", "Java", "C++", "C#", "SQL",'Python', "HTML", "CSS"],
     "Web & Backend": ["Node.js", "Express", "React", "REST APIs", "PostgreSQL"],
     Security: ["JWT (dual-token)", "bcrypt", "HTTP-only cookies", "MFA / OTP", "TryHackMe"],
     "Tools & Practice": ["Git & GitHub", "Agile / SDLC", "Railway", "Netlify", "Vite"],

@@ -912,44 +912,70 @@
 
 
 /* ============================================
-   STEP 12 — mobile topbar fix
+   STEP 12 — mobile menu
    ============================================ */
 
-@media (max-width: 640px) {
-  /* the name/location line is redundant on mobile — the hero says it anyway */
-  .topbar-id {
-    display: none;
-  }
+/* hamburger hidden on desktop */
+.menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 9px;
+  flex-shrink: 0;
+}
+.menu-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--text);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+/* hamburger → X */
+.menu-btn.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.menu-btn.open span:nth-child(2) { opacity: 0; }
+.menu-btn.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
+/* on desktop the switch button just joins the nav row */
+.topbar-nav .switch-btn { margin-left: 10px; }
+
+@media (max-width: 640px) {
   .topbar-inner {
     flex-wrap: nowrap;
     justify-content: space-between;
-    gap: 10px;
-    padding-top: 10px;
-    padding-bottom: 10px;
   }
+  .topbar-id { font-size: 12px; }
+  .menu-btn { display: flex; }
 
-  /* nav becomes a compact scrollable row if it ever overflows */
+  /* the nav becomes a dropdown panel under the bar */
   .topbar-nav {
-    gap: 14px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  .topbar-nav::-webkit-scrollbar {
     display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 6px 24px 18px;
+    box-shadow: var(--shadow);
   }
-  .topbar-nav a {
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
-  }
+  .topbar-nav.open { display: flex; }
 
-  .switch-btn {
-    font-size: 10px;
-    padding: 6px 9px;
-    white-space: nowrap;
-    flex-shrink: 0;
+  .topbar-nav a {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .topbar-nav .switch-btn {
+    margin: 16px 0 0;
+    align-self: flex-start;
+    font-size: 12px;
+    padding: 9px 14px;
   }
 }
