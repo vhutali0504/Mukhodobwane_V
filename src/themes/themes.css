@@ -1,0 +1,87 @@
+/* ============================================
+   THEME TOKENS
+   One block per profile. Components only ever
+   use the variables, never raw colors.
+   ============================================ */
+
+/* Default (no theme picked yet) — the picker screen */
+:root {
+  --bg: #101318;
+  --bg-2: #171B22;
+  --surface: #1D222B;
+  --surface-text: #F0F2F5;
+  --surface-text-muted: #98A0AD;
+  --text: #F0F2F5;
+  --text-muted: #98A0AD;
+  --accent: #E3B94A;
+  --accent-2: #98A0AD;
+  --line: #2A303B;
+  --radius: 10px;
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --font-display: "Sora", sans-serif;
+  --font-body: "Karla", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+/* ---------- THE STUDENT ----------
+   Light, warm, approachable. UJ orange as the accent.
+   The "I would hire this pleasant person" theme. */
+[data-theme="student"] {
+  --bg: #FAF8F4;
+  --bg-2: #F1EDE5;
+  --surface: #FFFFFF;
+  --surface-text: #1E2430;
+  --surface-text-muted: #6B7280;
+  --text: #1E2430;
+  --text-muted: #6B7280;
+  --accent: #E8730C;
+  --accent-2: #3B6EA5;
+  --line: #E3DED2;
+  --radius: 14px;
+  --shadow: 0 8px 24px rgba(30, 36, 48, 0.08);
+  --font-display: "Sora", sans-serif;
+  --font-body: "Karla", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+/* ---------- SHADOWHAWK ----------
+   Near-black, predatory red, hard edges, mono body.
+   The theme that read the auth spec so you don't have to. */
+[data-theme="cyber"] {
+  --bg: #0A0E12;
+  --bg-2: #0F141A;
+  --surface: #121820;
+  --surface-text: #D9E0E8;
+  --surface-text-muted: #6E7A87;
+  --text: #D9E0E8;
+  --text-muted: #6E7A87;
+  --accent: #D42B2B;
+  --accent-2: #3BA55D;
+  --line: #1E2833;
+  --radius: 0px;
+  --shadow: 0 0 0 1px #1E2833, 0 14px 34px rgba(0, 0, 0, 0.55);
+  --font-display: "Chakra Petch", sans-serif;
+  --font-body: "IBM Plex Mono", monospace;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+/* ---------- THE ENGINEER ----------
+   Blueprint navy, ice-blue linework, structured.
+   Everything measured twice. */
+[data-theme="swe"] {
+  --bg: #0F2237;
+  --bg-2: #143050;
+  --surface: #F4F7FB;
+  --surface-text: #16202C;
+  --surface-text-muted: #55677C;
+  --text: #E8F0F9;
+  --text-muted: #8FA5BC;
+  --accent: #4FA3E3;
+  --accent-2: #E3B94A;
+  --line: #24405E;
+  --radius: 4px;
+  --shadow: 0 12px 30px rgba(4, 12, 22, 0.4);
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --font-body: "Archivo", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
