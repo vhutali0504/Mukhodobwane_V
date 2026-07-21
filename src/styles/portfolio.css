@@ -909,3 +909,47 @@
 @media (prefers-reduced-motion: reduce) {
   .eng-item { display: none; }
 }
+
+
+/* ============================================
+   STEP 12 — mobile topbar fix
+   ============================================ */
+
+@media (max-width: 640px) {
+  /* the name/location line is redundant on mobile — the hero says it anyway */
+  .topbar-id {
+    display: none;
+  }
+
+  .topbar-inner {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  /* nav becomes a compact scrollable row if it ever overflows */
+  .topbar-nav {
+    gap: 14px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .topbar-nav::-webkit-scrollbar {
+    display: none;
+  }
+  .topbar-nav a {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .switch-btn {
+    font-size: 10px;
+    padding: 6px 9px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
