@@ -26,3 +26,4 @@ export const SCAN_MS = 1400;
 export const GRANT_HOLD_MS = 1100;
 export const GLITCH_MS = 320;
 export const MAX_INPUT = 40;
+export const SCROLL_PAGE = 12;

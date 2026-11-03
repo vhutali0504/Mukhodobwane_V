@@ -9,6 +9,7 @@ import {
   GRANT_HOLD_MS,
   MAX_INPUT,
   MENU,
+  SCROLL_PAGE,
 } from './constants.js';
 import { parseCommand } from './commands.js';
 import { createQuiz, answerQuiz, nextQuestion, isQuizOver } from './quiz.js';
@@ -32,6 +33,8 @@ export function createTerminal({ rng = Math.random, now = 0 } = {}) {
     input: '',
     factIdx: Math.floor(rng() * 1000),
     booted: false,
+    scroll: 0,
+    scrollMax: 0,
   };
 }
 
@@ -202,6 +205,24 @@ function tick(t, now) {
   return out(t);
 }
 
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const READING = ['section', 'msg'];
+
+function scrollBy(t, delta) {
+  if (!READING.includes(t.mode)) return out(t);
+  const scroll = clamp(t.scroll + delta, 0, t.scrollMax);
+  return out(scroll === t.scroll ? t : { ...t, scroll });
+}
+
+function setScrollMax(t, max) {
+  const scrollMax = Math.max(0, Math.floor(Number(max)) || 0);
+  const scroll = clamp(t.scroll, 0, scrollMax);
+  if (scrollMax === t.scrollMax && scroll === t.scroll) return out(t);
+  return out({ ...t, scrollMax, scroll });
+}
+
+const SCROLL_KEYS = { ArrowDown: 1, ArrowUp: -1, PageDown: SCROLL_PAGE, PageUp: -SCROLL_PAGE, ' ': SCROLL_PAGE };
+
 function onKey(t, c, a) {
   const k = String(a.key);
   if (k === 'Escape') return out(t, 'standUp');
@@ -212,6 +233,7 @@ function onKey(t, c, a) {
     const i = 'abc123'.indexOf(k.toLowerCase());
     if (i >= 0) return out({ ...t, quiz: answerQuiz(t.quiz, i % 3) });
   }
+  if (READING.includes(t.mode) && !t.input && k in SCROLL_KEYS) return scrollBy(t, SCROLL_KEYS[k]);
   if (k === 'Enter') return t.input ? runCommand(t, c, t.input) : activate(t, c);
   if (k === 'Backspace') {
     if (t.input) return out({ ...t, input: t.input.slice(0, -1) });
@@ -253,7 +275,7 @@ function clickLine(t, c, i) {
   }
 }
 
-export function step(t, action, ctx) {
+function stepInner(t, action, ctx) {
   const c = { ...defaultCtx(), ...ctx };
   switch (action.type) {
     case 'sit':
@@ -266,9 +288,23 @@ export function step(t, action, ctx) {
       return t.mode === 'idle' ? sit(t, action.now) : startScan(t, action.now);
     case 'clickLine':
       return clickLine(t, c, action.index);
+    case 'scroll':
+      return scrollBy(t, Number(action.delta) || 0);
+    case 'setScrollMax':
+      return setScrollMax(t, action.max);
     case 'tapCommand':
       return SEATED_MODES.includes(t.mode) ? runCommand(t, c, action.text) : out(t);
     default:
       return out(t);
   }
+}
+
+// Scroll position belongs to what is on screen: reset when it changes.
+export function step(t, action, ctx) {
+  const r = stepInner(t, action, ctx);
+  const n = r.t;
+  if (n !== t && n.scroll !== 0 && (n.mode !== t.mode || n.sec !== t.sec || n.msg !== t.msg)) {
+    return { ...r, t: { ...n, scroll: 0 } };
+  }
+  return r;
 }

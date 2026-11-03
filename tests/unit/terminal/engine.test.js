@@ -241,3 +241,56 @@ describe('purity', () => {
     }
   });
 });
+
+describe('scrolling', () => {
+  const inSection = () => {
+    const t = run(toMenu(), [key('Enter')]).t;
+    return run(t, [{ type: 'setScrollMax', max: 30 }]).t;
+  };
+
+  it('starts at zero', () => {
+    expect(mk()).toMatchObject({ scroll: 0, scrollMax: 0 });
+  });
+
+  it('setScrollMax clamps, floors at 0 and keeps the reference when unchanged', () => {
+    let t = inSection();
+    t = run(t, [{ type: 'scroll', delta: 25 }]).t;
+    expect(t.scroll).toBe(25);
+    const r = step(t, { type: 'setScrollMax', max: 10 }, ctx());
+    expect(r.t).toMatchObject({ scrollMax: 10, scroll: 10 });
+    expect(r.effects).toEqual([]);
+    expect(step(r.t, { type: 'setScrollMax', max: 10 }, ctx()).t).toBe(r.t);
+    expect(step(r.t, { type: 'setScrollMax', max: -4 }, ctx()).t).toMatchObject({ scrollMax: 0, scroll: 0 });
+  });
+
+  it('scroll delta clamps to [0, scrollMax] and only works when reading', () => {
+    const t = inSection();
+    expect(run(t, [{ type: 'scroll', delta: 99 }]).t.scroll).toBe(30);
+    expect(run(t, [{ type: 'scroll', delta: -5 }]).t.scroll).toBe(0);
+    const menu = toMenu();
+    expect(step(menu, { type: 'scroll', delta: 3 }, ctx()).t).toBe(menu);
+  });
+
+  it('arrow and page keys scroll a section', () => {
+    const t = inSection();
+    expect(run(t, [key('ArrowDown'), key('ArrowDown'), key('ArrowUp')]).t.scroll).toBe(1);
+    expect(run(t, [key('PageDown')]).t.scroll).toBe(12);
+    expect(run(t, [key('PageDown'), key('PageDown'), key('PageDown')]).t.scroll).toBe(30);
+    expect(run(t, [key('PageDown'), key('PageUp')]).t.scroll).toBe(0);
+    expect(run(t, [key(' ')]).t.scroll).toBe(12);
+  });
+
+  it('space types a space when input is not empty', () => {
+    const t = run(inSection(), [key('a'), key(' ')]).t;
+    expect(t.input).toBe('a ');
+    expect(t.scroll).toBe(0);
+  });
+
+  it('resets to 0 when another section opens', () => {
+    let t = run(inSection(), [key('PageDown')]).t;
+    expect(t.scroll).toBe(12);
+    t = run(t, [...type('cat skills'), key('Enter')]).t;
+    expect(t.mode).toBe('section');
+    expect(t.scroll).toBe(0);
+  });
+});

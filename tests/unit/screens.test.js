@@ -8,6 +8,8 @@ import {
   drawTopRight,
 } from '../../client/src/room/screens/drawSide.js';
 import { drawNote } from '../../client/src/room/screens/drawNote.js';
+import { sectionLines } from '../../client/src/room/terminal/sections.js';
+import { profile } from '../../client/src/content/profile.js';
 import { mulberry32 } from './terminal/helpers.js';
 
 const mkCtx = () => document.createElement('canvas').getContext('2d');
@@ -165,5 +167,32 @@ describe('side screens and note', () => {
     const body = ctx.fillText.mock.calls.filter((c) => c[1] === 14 && c[2] >= 60 && c[2] < 60 + 9 * 19);
     expect(body.length).toBeLessThanOrEqual(9);
     expect(body.length).toBeGreaterThan(0);
+  });
+});
+
+describe('scrollable sections', () => {
+  it('projects overflow, scroll to the last line and drop the more indicator', () => {
+    const s = seatedMenu();
+    s.act({ type: 'clickLine', index: 3 });
+    const first = drawMain(mkCtx(), s.get(), 10000, OPTS);
+    expect(first.scrollMax).toBeGreaterThan(0);
+    s.act({ type: 'setScrollMax', max: first.scrollMax });
+    for (let i = 0; i < 30; i++) s.act({ type: 'key', key: 'PageDown', now: 1 });
+    expect(s.get().scroll).toBe(first.scrollMax);
+    const ctx = mkCtx();
+    drawMain(ctx, s.get(), 10000, OPTS);
+    const lines = sectionLines(3, profile);
+    const lastLine = lines[lines.length - 1];
+    expect(texts(ctx).some((x) => x === lastLine)).toBe(true);
+    expect(texts(ctx).some((x) => x.includes('more ▼'))).toBe(false);
+  });
+
+  it('shows the more indicator at the top and zero scrollMax outside reading modes', () => {
+    const s = seatedMenu();
+    s.act({ type: 'clickLine', index: 3 });
+    const ctx = mkCtx();
+    drawMain(ctx, s.get(), 10000, OPTS);
+    expect(texts(ctx).some((x) => x.includes('more ▼'))).toBe(true);
+    expect(drawMain(mkCtx(), seatedMenu().get(), 10000, OPTS).scrollMax).toBe(0);
   });
 });

@@ -98,6 +98,7 @@ function drawMenu(ctx, t, p, geom) {
   p.line('↑↓ or click · enter to open · type "help" · esc to stand up', DIM);
 }
 
+// Draws the visible slice of the wrapped body and returns the max scroll offset.
 function drawSection(ctx, t, p, profile) {
   const isSec = t.mode === 'section';
   const id = MENU[t.sec];
@@ -112,15 +113,21 @@ function drawSection(ctx, t, p, profile) {
   ctx.font = mono(isSec ? 21 : 25);
   const step = isSec ? 27 : LH;
   const body = isSec ? sectionLines(t.sec, profile) : t.msg.lines;
-  const limit = H - 100;
-  for (const b of body) {
-    for (const l of wrap(ctx, b, W - X * 2)) {
-      if (p.y > limit) return;
-      ctx.fillStyle = l.startsWith('[placeholder') ? DIM : G;
-      ctx.fillText(l, X, p.y);
-      p.y += step;
-    }
-  }
+  const lines = body.flatMap((b) => wrap(ctx, b, W - X * 2));
+  const visible = Math.max(1, Math.floor((H - 100 - p.y) / step) + 1);
+  const scrollMax = Math.max(0, lines.length - visible);
+  const from = Math.min(t.scroll, scrollMax);
+  lines.slice(from, from + visible).forEach((l) => {
+    ctx.fillStyle = l.startsWith('[placeholder') ? DIM : G;
+    ctx.fillText(l, X, p.y);
+    p.y += step;
+  });
+  ctx.font = mono(18);
+  ctx.fillStyle = DIM;
+  const last = Math.min(lines.length, from + visible);
+  if (from > 0) ctx.fillText('[▲ more]', W - 160, 28);
+  if (last < lines.length) ctx.fillText(`[more ▼ ${last}/${lines.length}]`, W - 260, H - 90);
+  return scrollMax;
 }
 
 function drawQuiz(ctx, t, p, geom) {
@@ -254,7 +261,7 @@ const TYPED = ['menu', 'section', 'msg', 'game', 'quiz'];
 // opts.glitchUntil: absolute `now` (ms) before which glitch slices are drawn; ignored when reducedMotion.
 export function drawMain(ctx, t, now, { reducedMotion = false, glitchUntil = 0, profile = defaultProfile } = {}) {
   const blink = reducedMotion || Math.floor(now / 500) % 2 === 0;
-  const geom = { menuY0: 0, lineH: 40 };
+  const geom = { menuY0: 0, lineH: 40, scrollMax: 0 };
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, W, H);
   ctx.textBaseline = 'top';
@@ -274,10 +281,10 @@ export function drawMain(ctx, t, now, { reducedMotion = false, glitchUntil = 0, 
       break;
     case 'section':
     case 'msg':
-      drawSection(ctx, t, p, profile);
+      geom.scrollMax = drawSection(ctx, t, p, profile);
       p.y = H - 90;
       ctx.font = mono(25);
-      p.line('[backspace] menu · [esc] stand up', DIM);
+      p.line('↑↓ scroll · [backspace] menu · [esc] stand up', DIM);
       break;
     case 'quiz':
       drawQuiz(ctx, t, p, geom);
