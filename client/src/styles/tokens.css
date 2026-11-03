@@ -20,6 +20,9 @@
   --room-screen: #010402;
   --room-bg: #020405;
 
+  /* Focus ring for room surfaces (token only; not wired yet) */
+  --focus-room: var(--room-green);
+
   /* Spacing scale (px) */
   --s-1: 4px;
   --s-2: 8px;

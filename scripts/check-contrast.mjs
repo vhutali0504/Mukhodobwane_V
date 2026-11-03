@@ -10,14 +10,19 @@ import { dirname, resolve } from 'node:path'
 const here = dirname(fileURLToPath(import.meta.url))
 const tokensPath = resolve(here, '..', 'client', 'src', 'styles', 'tokens.css')
 
-// [label, foreground token, background token, minimum ratio]
+// [label, foreground token, background token, minimum ratio, kind]
+// Text pairs need 4.5 (body) or 7 (AAA-level). Non-text pairs (focus rings,
+// UI boundaries) need 3 under WCAG 2.2 SC 1.4.11.
 const PAIRS = [
-  ['ink/bg', 'ink', 'bg', 7],
-  ['muted/bg', 'muted', 'bg', 4.5],
-  ['navy/bg', 'navy', 'bg', 7],
-  ['white/ink', 'white', 'ink', 7],
-  ['room dim green/screen', 'room-green-dim', 'room-screen', 4.5],
-  ['room green/screen', 'room-green', 'room-screen', 7],
+  ['ink/bg', 'ink', 'bg', 7, 'text'],
+  ['muted/bg', 'muted', 'bg', 4.5, 'text'],
+  ['navy/bg', 'navy', 'bg', 7, 'text'],
+  ['white/ink', 'white', 'ink', 7, 'text'],
+  ['room dim green/screen', 'room-green-dim', 'room-screen', 4.5, 'text'],
+  ['room green/screen', 'room-green', 'room-screen', 7, 'text'],
+  ['navy/bg (focus)', 'navy', 'bg', 3, 'non-text'],
+  ['navy/card (focus)', 'navy', 'card', 3, 'non-text'],
+  ['room green/room bg (focus)', 'room-green', 'room-bg', 3, 'non-text'],
 ]
 
 function parseTokens(css) {
@@ -66,7 +71,7 @@ function main() {
   const tokens = parseTokens(css)
   let failures = 0
 
-  for (const [label, fgName, bgName, minimum] of PAIRS) {
+  for (const [label, fgName, bgName, minimum, kind] of PAIRS) {
     const fg = tokens[fgName]
     const bg = tokens[bgName]
     if (!fg || !bg) {
@@ -78,7 +83,7 @@ function main() {
     const ok = ratio >= minimum
     if (!ok) failures += 1
     console.log(
-      `${ok ? 'PASS' : 'FAIL'} ${label}: ${ratio.toFixed(2)}:1 (needs ${minimum}:1)`,
+      `${ok ? 'PASS' : 'FAIL'} [${kind} ${minimum}:1] ${label}: ${ratio.toFixed(2)}:1 (needs ${minimum}:1)`,
     )
   }
 
