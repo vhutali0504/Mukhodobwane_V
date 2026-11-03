@@ -60,7 +60,7 @@ export const profile = {
   projects: [
     {
       id: 'ksms',
-      title: 'MutualTrust: Student Management System (KSMS)',
+      title: 'MutualTrust – Student Management System (KSMS)',
       kind: 'Final Year Project',
       when: 'Jan 2026 – Oct 2026',
       stack: ['React', 'Node.js', 'PostgreSQL'],
@@ -87,7 +87,7 @@ export const profile = {
     },
     {
       id: 'tle',
-      title: 'Thusa Lushaka Empowerment: NPO Website',
+      title: 'Thusa Lushaka Empowerment – NPO Website',
       kind: 'Client Project (EDS)',
       when: '2024 – 2025',
       stack: ['React', 'Vite', 'React Router', 'Netlify'],
