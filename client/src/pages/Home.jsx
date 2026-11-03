@@ -6,6 +6,10 @@ import Footer from '../components/layout/Footer.jsx'
 import MobileCta from '../components/layout/MobileCta.jsx'
 import Hero from '../components/formal/Hero.jsx'
 import Stats from '../components/formal/Stats.jsx'
+import Work from '../components/formal/Work.jsx'
+import Experience from '../components/formal/Experience.jsx'
+import Skills from '../components/formal/Skills.jsx'
+import Education from '../components/formal/Education.jsx'
 
 export default function Home() {
   useDocumentMeta({
@@ -18,6 +22,10 @@ export default function Home() {
       <main id="main">
         <Hero />
         <Stats />
+        <Work />
+        <Experience />
+        <Skills />
+        <Education />
       </main>
       <Footer />
       <MobileCta />

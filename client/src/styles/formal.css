@@ -286,3 +286,126 @@
   .stat:nth-child(2n) { border-right: 0; }
   .stat:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
 }
+
+/* Sections: work rows, experience timeline, skills, education */
+.section {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 44px clamp(var(--s-4), 5vw, 40px);
+}
+.section h2 {
+  /* Clears the top bar (about 64px tall) when jumped to by the nav */
+  scroll-margin-top: 80px;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+}
+.section ul, .section ol { padding: 0; margin: 0; list-style: none; }
+
+.rows { border-bottom: 1px solid var(--line); }
+.row { border-top: 1px solid var(--line); }
+.row-head { margin: 0; font-size: inherit; }
+.row-button {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 20px;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: padding 0.25s;
+}
+.row-button:hover { padding-left: 10px; }
+.row-button:hover .arrow { transform: translateX(6px); color: var(--accent); }
+.row .n { color: var(--muted); font-size: 13px; }
+.row-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.row-title { font-size: 18px; font-weight: 700; overflow-wrap: anywhere; }
+.row-sum { font-size: 14px; color: var(--muted); }
+.arrow { font-size: 20px; transition: transform 0.25s, color 0.25s; }
+.row.is-open .arrow { color: var(--accent); }
+.tags, .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tags span, .chips li {
+  padding: 3px 10px;
+  font-size: 12px;
+  color: var(--navy);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+.tags { margin-top: 6px; }
+
+.row-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+.row.is-open .row-panel { grid-template-rows: 1fr; }
+.row-panel-clip { overflow: hidden; min-height: 0; }
+.row-panel-body { padding: 0 0 24px 80px; }
+.row-bullets { display: grid; gap: 10px; }
+.row-bullets li { position: relative; padding-left: 16px; }
+.row-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.row-meta { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 14px 0 0; font-size: 13px; color: var(--muted); }
+.section .row-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 14px; }
+.row-links a { color: var(--navy); font-weight: 600; text-underline-offset: 3px; }
+.row-links a:hover { color: var(--ink); }
+.row.is-instant .row-panel, .row.is-instant .row-button, .row.is-instant .arrow { transition: none; }
+
+/* Experience timeline: thin neutral line with dots */
+.section .timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--line);
+}
+.tl-item { position: relative; padding-bottom: 32px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -28px;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--navy);
+}
+.tl-item h3 { margin: 0 0 4px; font-size: 18px; }
+.tl-when { margin: 0 0 12px; font-size: 13px; color: var(--muted); }
+.tl-item ul { display: grid; gap: 10px; }
+.tl-item li { max-width: 760px; }
+
+.skill-groups { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px 40px; }
+.skill-group h3 { margin: 0 0 10px; font-size: 14px; color: var(--muted); font-weight: 600; }
+.edu-school { margin: 0 0 4px; font-size: 18px; }
+.edu-degree { margin: 0 0 14px; color: var(--muted); }
+.section .edu-notes { display: grid; gap: 8px; margin-top: 18px; max-width: 760px; }
+
+@media (max-width: 720px) {
+  .row-button { grid-template-columns: 36px 1fr auto; gap: 12px; }
+  .row-panel-body { padding-left: 48px; }
+  .skill-groups { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-panel, .row-button, .arrow { transition: none; }
+}
