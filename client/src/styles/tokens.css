@@ -1,0 +1,39 @@
+/* Design tokens. Source of truth for colour, type, spacing and radius.
+   scripts/check-contrast.mjs reads the colour values from this file. */
+
+:root {
+  /* Formal palette */
+  --bg: #F7F5F0;
+  --ink: #14213D;
+  --navy: #1F3A5F;
+  --muted: #5B6474;
+  --line: #E2DDD2;
+  --card: #FFFFFF;
+  --accent: #E8730C;
+  --white: #FFFFFF;
+
+  /* Room palette */
+  --room-green: #3CFF8F;
+  --room-green-dim: #1F8F50;
+  --room-amber: #FFB347;
+  --room-red: #FF4545;
+  --room-screen: #010402;
+  --room-bg: #020405;
+
+  /* Spacing scale (px) */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  /* Shape */
+  --radius: 10px;
+
+  /* Type. Never use a banned font here; system-ui is the fallback. */
+  --font-ui: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}

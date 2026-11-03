@@ -7,7 +7,7 @@ export default [
   js.configs.recommended,
   reactHooks.configs.flat.recommended,
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['**/*.{js,jsx,mjs}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
