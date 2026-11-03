@@ -409,3 +409,34 @@
 @media (prefers-reduced-motion: reduce) {
   .row-panel, .row-button, .arrow { transition: none; }
 }
+
+/* Contact form */
+.contact-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 40px; }
+.contact-side p { max-width: 360px; margin: 0 0 16px; }
+.contact-links { display: grid; gap: 8px; }
+.contact-links a { overflow-wrap: anywhere; }
+.contact-form { display: grid; gap: 18px; max-width: 560px; }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field input[type='text'], .field input[type='email'], .field textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1.5px solid var(--muted);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+}
+.field [aria-invalid='true'] { border-color: #a4161a; }
+.field-error, .form-error { margin: 0; font-size: 14px; color: #a4161a; }
+.field.consent { grid-template-columns: auto 1fr; align-items: start; column-gap: 10px; }
+.field.consent input { margin-top: 3px; width: 18px; height: 18px; }
+.field.consent label { font-weight: 400; }
+.field.consent .field-error { grid-column: 1 / -1; }
+.contact-form .btn { justify-self: start; }
+.contact-form .btn:disabled { opacity: 0.7; cursor: progress; }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+@media (max-width: 720px) {
+  .contact-grid { grid-template-columns: 1fr; gap: 24px; }
+  .contact-form .btn { justify-self: stretch; }
+}

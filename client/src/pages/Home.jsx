@@ -10,6 +10,7 @@ import Work from '../components/formal/Work.jsx'
 import Experience from '../components/formal/Experience.jsx'
 import Skills from '../components/formal/Skills.jsx'
 import Education from '../components/formal/Education.jsx'
+import ContactForm from '../components/formal/ContactForm.jsx'
 
 export default function Home() {
   useDocumentMeta({
@@ -26,6 +27,7 @@ export default function Home() {
         <Experience />
         <Skills />
         <Education />
+        <ContactForm />
       </main>
       <Footer />
       <MobileCta />
