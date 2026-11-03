@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hacker Room Prototype</title>
+<style>
+  html,body{margin:0;height:100%;background:#020405;overflow:hidden;font-family:Consolas,"Courier New",monospace;color:#cfe9dc}
+  canvas{display:block;touch-action:none}
+  .tag{position:fixed;top:12px;left:12px;font-size:11px;letter-spacing:.12em;color:#ffb347;background:rgba(0,0,0,.6);padding:5px 8px;border:1px solid #3a2a10;border-radius:3px}
+  .hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);font-size:13px;color:#7dffb0;background:rgba(0,0,0,.65);padding:8px 14px;border:1px solid #1f5a3a;border-radius:4px;white-space:nowrap;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis}
+  .btn{position:fixed;top:12px;right:12px;font:inherit;font-size:12px;color:#020405;background:#7dffb0;border:0;padding:7px 12px;border-radius:3px;cursor:pointer;display:none}
+  .btn:focus-visible{outline:2px solid #ffb347;outline-offset:2px}
+  #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:#3cff8f;background:#020405;z-index:5}
+</style>
+</head>
+<body>
+<div id="loading">booting room_</div>
+<div class="tag">THROWAWAY PROTOTYPE · placeholder blocks, not final art</div>
+<button class="btn" id="standBtn">stand up [esc]</button>
+<div class="hint" id="hint">drag to look around · click the desk to sit down</div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+
+const G='#3cff8f', D='#1f8f50', A='#ffb347', R='#ff4545', BG='#010402';
+const hintEl=document.getElementById('hint'), standBtn=document.getElementById('standBtn');
+
+// ---------- renderer / scene ----------
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled=true;
+document.body.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x020405);
+scene.fog=new THREE.FogExp2(0x020405,0.035);
+const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.05,60);
+
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.75,0.55,0.55);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ---------- materials ----------
+const std=(c,r=0.85,m=0.1)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const darkMat=std(0x0c0e10,0.6,0.3), deskMat=std(0x1a1d20,0.55,0.25), wallMat=std(0x0f1619,0.95,0), floorMat=std(0x0a0d0e,0.8,0.05);
+const glow=(c)=>new THREE.MeshBasicMaterial({color:c,toneMapped:false});
+const box=(w,h,d,mat,x,y,z,parent=scene)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;parent.add(m);return m;};
+
+// ---------- room ----------
+const room=new THREE.Mesh(new THREE.BoxGeometry(8,3.2,8),wallMat); room.material.side=THREE.BackSide; room.position.y=1.6; room.receiveShadow=true; scene.add(room);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,8),floorMat); floor.rotation.x=-Math.PI/2; floor.position.y=0.001; floor.receiveShadow=true; scene.add(floor);
+// rug
+box(2.6,0.01,1.8,std(0x141010,1,0),-1.6,0.006,-2.6);
+
+// desk
+const DX=-1.6, DZ=-3.55, DY=0.75;
+const desk=box(3.2,0.05,0.8,deskMat,DX,DY,DZ);
+[[-1.55,-0.35],[1.55,-0.35],[-1.55,0.35],[1.55,0.35]].forEach(([x,z])=>box(0.05,DY,0.05,darkMat,DX+x,DY/2,DZ+z));
+const led=box(3.2,0.012,0.012,glow(0xff2a2a),DX,DY-0.03,DZ+0.4);
+// keyboard + mouse + pad
+const keyboard=box(0.48,0.02,0.15,darkMat,DX,DY+0.035,DZ+0.25);
+for(let r=0;r<4;r++)for(let k=0;k<14;k++)box(0.026,0.008,0.026,std(0x1c2124,0.5,0.2),DX-0.21+k*0.032,DY+0.05,DZ+0.2+r*0.032);
+box(0.5,0.004,0.17,glow(0x5a0d0d),DX,DY+0.026,DZ+0.25); // underglow
+box(0.06,0.025,0.1,darkMat,DX+0.36,DY+0.04,DZ+0.26);
+const padBase=box(0.1,0.018,0.12,darkMat,DX+0.55,DY+0.035,DZ+0.25);
+const padGlowMat=glow(0x1f8f50);
+const padGlow=new THREE.Mesh(new THREE.CircleGeometry(0.035,32),padGlowMat); padGlow.rotation.x=-Math.PI/2; padGlow.position.set(DX+0.55,DY+0.046,DZ+0.25); scene.add(padGlow);
+padBase.userData.action=padGlow.userData.action='pad';
+
+// cans
+const cans=[];
+[[-1.25,0.2],[-1.13,0.28],[-1.2,0.05]].forEach(([x,z],i)=>{
+  const g=new THREE.Group(); g.position.set(DX+x,DY+0.025,DZ+z);
+  const c=new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.032,0.12,20),std(i===1?0x1d3a24:0x2a2a2a,0.35,0.7)); c.position.y=0.06; c.castShadow=true;
+  const band=new THREE.Mesh(new THREE.CylinderGeometry(0.0325,0.0325,0.02,20),glow(i===1?0xffb347:0x3cff8f)); band.position.y=0.07;
+  g.add(c,band); scene.add(g); c.userData.action=band.userData.action='can'; c.userData.can=band.userData.can=g;
+  g.userData={down:false,k:0,dir:i%2?1:-1}; cans.push(g);
+});
+
+// lamp
+const lamp=new THREE.Group(); lamp.position.set(DX+1.35,DY+0.025,DZ-0.1); scene.add(lamp);
+box(0.14,0.02,0.14,darkMat,0,0.01,0,lamp);
+const arm=box(0.02,0.45,0.02,darkMat,0,0.24,0,lamp); arm.rotation.z=0.25;
+const head=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.1,20,1,true),std(0x222,0.4,0.6)); head.position.set(-0.07,0.46,0.02); head.rotation.z=-0.9; lamp.add(head);
+const bulb=new THREE.Mesh(new THREE.SphereGeometry(0.022,12,12),glow(0xffc070)); bulb.position.set(-0.1,0.43,0.02); lamp.add(bulb);
+const lampLight=new THREE.SpotLight(0xffb347,5,3,0.7,0.6,1.5); lampLight.position.set(DX+1.25,DY+0.45,DZ-0.08); lampLight.target.position.set(DX+0.9,DY,DZ+0.1); lampLight.castShadow=true; scene.add(lampLight,lampLight.target);
+lamp.traverse(o=>o.userData.action='lamp');
+
+// chair
+const chair=new THREE.Group(); chair.position.set(DX,0,-2.55); scene.add(chair);
+const cMat=std(0x15191c,0.7,0.1), cAccent=std(0x5a1414,0.6,0.1);
+const leg=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.42,12),darkMat); leg.position.y=0.25; chair.add(leg);
+for(let i=0;i<5;i++){const b=box(0.3,0.03,0.04,darkMat,0,0.05,0,chair); b.rotation.y=i*Math.PI*2/5; b.position.x=Math.cos(i*Math.PI*2/5)*0.0;}
+box(0.52,0.08,0.5,cMat,0,0.5,0,chair);
+box(0.5,0.62,0.07,cMat,0,0.88,0.24,chair);
+box(0.06,0.6,0.075,cAccent,-0.16,0.88,0.24,chair); box(0.06,0.6,0.075,cAccent,0.16,0.88,0.24,chair);
+chair.traverse(o=>o.userData.action='chair'); chair.userData={spin:0};
+
+// ---------- screens ----------
+const scanCache={};
+function scanlines(w,h){const k=w+'x'+h; if(scanCache[k])return scanCache[k]; const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='rgba(0,0,0,0.22)';for(let y=0;y<h;y+=3)x.fillRect(0,y,w,1);const v=x.createRadialGradient(w/2,h/2,h*0.3,w/2,h/2,w*0.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,0.55)');x.fillStyle=v;x.fillRect(0,0,w,h);return scanCache[k]=c;}
+function makeScreen(w,h,cw,ch,x,y,z,ry=0,rx=0){
+  const c=document.createElement('canvas'); c.width=cw; c.height=ch;
+  const ctx=c.getContext('2d'); ctx.fillStyle=BG; ctx.fillRect(0,0,cw,ch);
+  const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=8;
+  const g=new THREE.Group(); g.position.set(x,y,z); g.rotation.set(rx,ry,0,'YXZ');
+  const bez=new THREE.Mesh(new THREE.BoxGeometry(w+0.045,h+0.045,0.035),darkMat); bez.position.z=-0.02; bez.castShadow=true;
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));
+  g.add(bez,mesh); scene.add(g);
+  // stand
+  if(y-h/2>DY+0.05){const sh=y-h/2-DY; const st=box(0.04,sh,0.04,darkMat,0,-h/2-sh/2,-0.05,g);}
+  bez.userData.action=mesh.userData.action='desk';
+  return {c,ctx,tex,mesh,group:g,W:cw,H:ch};
+}
+const main=makeScreen(0.92,0.55,1024,612,DX,1.2,DZ-0.12);
+const left=makeScreen(0.64,0.4,512,320,DX-0.88,1.13,DZ-0.02,0.5);
+const right=makeScreen(0.64,0.4,512,320,DX+0.88,1.13,DZ-0.02,-0.5);
+const topL=makeScreen(0.58,0.33,512,292,DX-0.33,1.68,DZ-0.17,0.06,0.12);
+const topR=makeScreen(0.58,0.33,512,292,DX+0.33,1.68,DZ-0.17,-0.06,0.12);
+main.mesh.userData.action='main';
+// sticky note with fun facts on the right monitor
+const noteC=document.createElement('canvas'); noteC.width=256; noteC.height=256; const nctx=noteC.getContext('2d');
+const noteTex=new THREE.CanvasTexture(noteC); noteTex.colorSpace=THREE.SRGBColorSpace;
+let noteFlip=0;
+function drawNote(text){nctx.fillStyle='#e6cf5c';nctx.fillRect(0,0,256,256);nctx.fillStyle='rgba(0,0,0,0.08)';nctx.fillRect(0,0,256,34);nctx.fillStyle='#2a2208';nctx.font='bold 26px "Segoe Print","Comic Sans MS",cursive';nctx.fillText('fun fact!',16,26);nctx.font='15px "Segoe Print","Comic Sans MS",cursive';const ls=wrap(nctx,text,226);ls.slice(0,9).forEach((l,i)=>nctx.fillText(l,14,60+i*19));nctx.font='16px "Segoe Print",cursive';nctx.fillStyle='#6a5a20';nctx.fillText('click for another',16,240);noteTex.needsUpdate=true;}
+const note=new THREE.Mesh(new THREE.PlaneGeometry(0.13,0.13),new THREE.MeshStandardMaterial({map:noteTex,roughness:0.9,emissive:0x2a2408,emissiveIntensity:0.5}));
+note.position.set(0.29,0.2,0.004); note.rotation.z=-0.12; note.userData.action='note'; right.group.add(note);
+desk.userData.action=keyboard.userData.action='desk';
+
+// screen glow light
+const screenLight=new THREE.PointLight(0x3cff8f,3.5,5,1.2); screenLight.position.set(DX,1.25,DZ+0.5); scene.add(screenLight);
+const redLight=new THREE.PointLight(0xff2a2a,2.5,2.6,1.4); redLight.position.set(DX,0.45,DZ+0.45); scene.add(redLight);
+scene.add(new THREE.HemisphereLight(0x6a8a8a,0x101010,1.1));
+const moon=new THREE.DirectionalLight(0x6f8fa0,0.8); moon.position.set(-5,3,1); scene.add(moon);
+
+// ---------- window with rain ----------
+const rainC=document.createElement('canvas'); rainC.width=320; rainC.height=220; const rctx=rainC.getContext('2d');
+const city=document.createElement('canvas'); city.width=320; city.height=220; {const x=city.getContext('2d'); x.fillStyle='#03070a'; x.fillRect(0,0,320,220); for(let i=0;i<26;i++){const bw=10+Math.random()*30,bh=40+Math.random()*150,bx=Math.random()*320; x.fillStyle='#060c10'; x.fillRect(bx,220-bh,bw,bh); for(let j=0;j<bh/9;j++){if(Math.random()<0.35){x.fillStyle=Math.random()<0.6?'rgba(255,179,71,0.55)':'rgba(120,220,210,0.45)'; x.fillRect(bx+2+Math.random()*(bw-6),220-bh+4+j*9,3,3);}}} x.filter='blur(1px)';}
+const drops=Array.from({length:110},()=>({x:Math.random()*320,y:Math.random()*220,v:3+Math.random()*4,l:6+Math.random()*10}));
+const rainTex=new THREE.CanvasTexture(rainC); rainTex.colorSpace=THREE.SRGBColorSpace;
+const win=new THREE.Mesh(new THREE.PlaneGeometry(1.7,1.15),new THREE.MeshBasicMaterial({map:rainTex,toneMapped:false})); win.position.set(-3.99,1.75,0.3); win.rotation.y=Math.PI/2; scene.add(win);
+box(0.05,1.25,0.05,darkMat,-3.97,1.75,-0.55); box(0.05,1.25,0.05,darkMat,-3.97,1.75,1.15); box(0.05,0.05,1.75,darkMat,-3.97,2.35,0.3); box(0.05,0.05,1.75,darkMat,-3.97,1.15,0.3); box(0.05,1.2,0.03,darkMat,-3.97,1.75,0.3);
+
+// poster
+{const c=document.createElement('canvas');c.width=256;c.height=360;const x=c.getContext('2d');x.fillStyle='#0b120d';x.fillRect(0,0,256,360);x.strokeStyle='#1f8f50';x.lineWidth=4;x.strokeRect(10,10,236,340);x.fillStyle=G;x.font='bold 40px Consolas,monospace';x.fillText('> root',30,80);x.font='20px Consolas,monospace';x.fillStyle=D;['0xDEADBEEF','sudo make','  me_a_sandwich','','trust no','  input.'].forEach((s,i)=>x.fillText(s,30,140+i*30));const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const p=new THREE.Mesh(new THREE.PlaneGeometry(0.55,0.78),new THREE.MeshStandardMaterial({map:t,roughness:0.9,emissive:0x0a2a14,emissiveIntensity:0.6}));p.position.set(0.6,1.85,-3.98);scene.add(p);}
+
+// server rack with blinking LEDs
+const rack=box(0.6,1.9,0.6,std(0x0b0d0f,0.5,0.5),3.3,0.95,-3.3);
+const rackLeds=[];
+for(let r=0;r<14;r++){box(0.56,0.02,0.01,std(0x15181a,0.5,0.5),3.3,0.25+r*0.115,-2.995);for(let k=0;k<4;k++){const m=new THREE.Mesh(new THREE.BoxGeometry(0.015,0.015,0.005),glow(Math.random()<0.75?0x3cff8f:0xffb347));m.position.set(3.08+k*0.03,0.29+r*0.115,-2.99);scene.add(m);rackLeds.push(m);}}
+const rackLight=new THREE.PointLight(0x3cff8f,0.8,2,1.5); rackLight.position.set(3.1,1,-2.6); scene.add(rackLight);
+
+// cables
+for(let i=0;i<5;i++){const pts=[new THREE.Vector3(DX-0.5+i*0.2,DY,DZ-0.35),new THREE.Vector3(DX-0.4+i*0.25,0.2,DZ-0.3),new THREE.Vector3(DX+0.5+i*0.4,0.02,DZ-0.1),new THREE.Vector3(3.0,0.02,-3.0)];const tube=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),30,0.008,6),std(0x070808,0.6,0.1));scene.add(tube);}
+
+// ---------- content (placeholder copy, real text comes from the CV) ----------
+const SECTIONS=[
+ {id:'professional_summary',body:['Final-year Computer Science student at the University of Johannesburg.','','Co-founder of Elevate Digital Solutions.','','Focus: secure authentication and full-stack web apps that real organisations use.','','[placeholder: final wording from your CV]']},
+ {id:'skills',body:['languages ...... JavaScript, Java, SQL','frontend ....... React, HTML, CSS','backend ........ Node.js, Express, REST APIs','security ....... JWT auth, MFA / OTP, session handling','tools .......... Git, Docker, Postman','','[placeholder: exact list from your CV]']},
+ {id:'experience',body:['Co-founder · Elevate Digital Solutions','  building websites and systems for clients','','[placeholder: roles, dates and bullet points from your CV]']},
+ {id:'projects',body:['01  auth_system      dual-token JWT, MFA OTP, refresh queue','02  fingerprint_id   fingerprint recognition system','03  tle_platform     website for an NPO','04  marketplace      student hustles marketplace','','type "cat projects" again to cycle · [placeholder detail pages]']},
+ {id:'education',body:['BSc Computer Science','University of Johannesburg · final year','','[placeholder: modules, awards, certificates]']},
+ {id:'contact',body:['email ......... [from your CV]','github ........ github.com/vhutali0504','linkedin ...... [from your CV]','','> download_cv.pdf   [placeholder]']},
+ {id:'fun_facts',fact:true,body:[]},
+ {id:'trivia',quiz:true,body:[]},
+ {id:'crack_the_vault',game:true,body:[]},
+];
+const FACTS=[
+ 'In 1947, engineers found a real moth stuck in the Harvard Mark II computer and taped it into the logbook as the "first actual case of bug being found".',
+ 'The Morris Worm (1988) was one of the first worms to spread across the internet. It slowed thousands of machines to a crawl.',
+ 'CAPTCHA stands for "Completely Automated Public Turing test to tell Computers and Humans Apart".',
+ 'Spam email is named after a Monty Python sketch where the word "Spam" is repeated over and over.',
+ 'The first .com domain ever registered was symbolics.com, in 1985.',
+ 'A "zero-day" is a flaw the software maker has had zero days to fix, because attackers found it first.',
+ '"123456" keeps showing up at the top of lists of the most common leaked passwords. Please do not use it.',
+ 'During WWII, Alan Turing and the team at Bletchley Park helped break the German Enigma cipher.',
+ 'The QWERTY keyboard layout comes from typewriters of the 1870s.',
+ 'One byte is 8 bits, so a single byte can hold 256 different values.',
+ 'JavaScript was created by Brendan Eich in about 10 days, in 1995.',
+ 'The first website, built by Tim Berners-Lee at CERN, went live in 1991 and you can still visit it at info.cern.ch.',
+];
+const QUIZ=[
+ {q:'What does HTTP stand for?',o:['HyperText Transfer Protocol','High Transfer Text Process','Hosted Text Transport Port'],a:0},
+ {q:'How many bits are in one byte?',o:['4','8','16'],a:1},
+ {q:'What was found inside the Harvard Mark II in 1947, giving us the word "bug"?',o:['A mouse','A moth','A spider'],a:1},
+ {q:'What does VPN stand for?',o:['Verified Public Node','Virtual Private Network','Visual Proxy Net'],a:1},
+ {q:'What does CPU stand for?',o:['Central Processing Unit','Computer Personal Unit','Central Program Utility'],a:0},
+ {q:'Which company created JavaScript in 1995?',o:['Microsoft','Netscape','Sun Microsystems'],a:1},
+ {q:'Who is often called the father of computer science?',o:['Alan Turing','Bill Gates','Ada Lovelace'],a:0},
+ {q:'Which port does HTTPS use by default?',o:['80','443','22'],a:1},
+ {q:'What does SQL stand for?',o:['Structured Query Language','Simple Question Logic','Server Queue List'],a:0},
+ {q:'What does two-factor authentication (2FA) add to logging in?',o:['A second password field','A second way to prove it is you','A faster login'],a:1},
+ {q:'Which of these is the strongest password?',o:['password123','Summer2024!','t7#Rq!m2Zp$9'],a:2},
+ {q:'What kind of attack tricks people into giving away details with fake emails?',o:['Phishing','Spoofing a router','Overclocking'],a:0},
+ {q:'Which number system uses only 0 and 1?',o:['Decimal','Hexadecimal','Binary'],a:2},
+];
+let factIdx=(Math.random()*FACTS.length)|0;
+function startQuiz(){S.quiz={qs:[...QUIZ].sort(()=>Math.random()-0.5).slice(0,5),i:0,score:0,picked:null};S.mode='quiz';S.input='';glitch(clock.getElapsedTime());}
+function pickAnswer(k){const z=S.quiz;if(!z||z.picked!==null||z.i>=z.qs.length)return;z.picked=k;if(k===z.qs[z.i].a)z.score++;glitch(clock.getElapsedTime());}
+function nextQ(){const z=S.quiz;if(z.i>=z.qs.length){startQuiz();return;}if(z.picked===null)return;z.i++;z.picked=null;glitch(clock.getElapsedTime());}
+let quizGeom={y0:0,lh:44};
+function showFact(){showMsg('fun_fact --random',[FACTS[factIdx++%FACTS.length],'','[enter] another fact']);S.msg.fact=true;}
+drawNote(FACTS[factIdx++]);
+
+// ---------- mini-game: crack the vault ----------
+const WORDS=['CRYPT','PROXY','TOKEN','SHELL','CACHE','ROUTE','NONCE','PATCH','BYTES','LOGIC','ADMIN','SPOOF','QUERY','STACK','DEBUG','HTTPS','LINUX','REGEX','ROOTS','HASHY'];
+const SYM='!@#$%^&*()[]{}<>?/\\|;:=+-_~';
+const junk=n=>Array.from({length:n},()=>SYM[(Math.random()*SYM.length)|0]).join('');
+function startGame(){
+  const pool=[...WORDS].sort(()=>Math.random()-0.5).slice(0,8);
+  S.game={words:pool,secret:pool[(Math.random()*8)|0],left:4,log:[],sel:0,done:null,fact:'',lines:pool.map(()=>{const p=(Math.random()*10)|0;return [junk(p),junk(10-p)];})};
+  S.mode='game'; S.input=''; glitch(clock.getElapsedTime());
+}
+function guess(w){
+  const g=S.game; if(!g||g.done)return; w=w.toUpperCase();
+  if(!g.words.includes(w)){g.log.push('> '+w+'  not in memory');return;}
+  if(g.log.some(l=>l.startsWith('> '+w+' ')))return;
+  if(w===g.secret){g.done='win';g.log.push('> '+w+'  MATCH');g.fact=FACTS[(Math.random()*FACTS.length)|0];}
+  else{let L=0;for(let i=0;i<5;i++)if(w[i]===g.secret[i])L++; g.left--; g.log.push('> '+w+'  likeness '+L+'/5'); if(g.left<=0){g.done='lose';g.log.push('> LOCKOUT · it was '+g.secret);}}
+  glitch(clock.getElapsedTime());
+}
+let gameGeom={y0:0,lh:40};
+
+// ---------- state ----------
+const S={pose:'standing',mode:'idle',sel:0,sec:0,input:'',booted:false,bootT:0,scanT:-1,grantT:-1,glitchUntil:0,msg:null,scanning:false};
+const BOOT=['[ 0.004] mounting /dev/vhutali ...','[ 0.051] loading modules: jwt  mfa  biometrics','[ 0.118] spoofing mac address ... ok','[ 0.240] bypassing firewall ... just kidding','[ 0.377] decrypting portfolio.tar.gpg ... ok','[ 0.512] secure shell ready'];
+
+function wrap(ctx,text,maxW){const out=[];text.split('\n').forEach(p=>{if(!p){out.push('');return;}let cur='';p.split(' ').forEach(w=>{const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>maxW&&cur){out.push(cur);cur=w;}else cur=t;});out.push(cur);});return out;}
+
+let menuGeom={y0:0,lh:34};
+function drawMain(t){
+  const {ctx,W,H}=main; ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
+  ctx.textBaseline='top'; const x=34, lh=34; let y=28;
+  ctx.font='25px Consolas,"Courier New",monospace';
+  const line=(s,col=G)=>{ctx.fillStyle=col;ctx.fillText(s,x,y);y+=lh;};
+  const blink=Math.floor(t*2)%2===0;
+  if(S.mode==='idle'){
+    ctx.font='bold 64px Consolas,monospace'; ctx.fillStyle=G; ctx.fillText('VHUTALI//SEC',x,170);
+    ctx.font='25px Consolas,monospace'; ctx.fillStyle=D; ctx.fillText('terminal locked · operator away',x,260);
+    ctx.fillStyle=A; ctx.fillText('> click to sit down'+(blink?'_':''),x,320);
+    ctx.fillStyle=D; for(let i=0;i<6;i++){ctx.fillText(((t*7+i*13)|0).toString(16).padStart(8,'0')+'  '+'▒'.repeat(4+((t*3+i)|0)%12),x,410+i*30);}
+  } else if(S.mode==='boot'||S.mode==='scan'){
+    const n=Math.min(BOOT.length,Math.floor((t-S.bootT)/0.28)+1);
+    for(let i=0;i<n;i++)line(BOOT[i],i===3?A:D);
+    if(n>=BOOT.length&&S.mode==='boot'){S.mode='scan';}
+    if(S.mode==='scan'){
+      y+=10;
+      if(S.grantT>0){
+        ctx.fillStyle=G; ctx.fillRect(x-6,y-4,330,44); ctx.fillStyle=BG; ctx.font='bold 34px Consolas,monospace'; ctx.fillText('ACCESS GRANTED',x,y); y+=60; ctx.font='25px Consolas,monospace';
+        line('welcome, visitor'+(blink?'_':''));
+        if(t-S.grantT>1.1){S.mode='menu';glitch(t);}
+      } else if(S.scanT>0){
+        const p=Math.min(1,(t-S.scanT)/1.4); const bars=Math.round(p*24);
+        line('scanning fingerprint ...',A); line('['+'█'.repeat(bars)+'░'.repeat(24-bars)+'] '+Math.round(p*100)+'%');
+        if(p>=1)S.grantT=t;
+      } else {
+        line('BIOMETRIC LOCK',A); line('place finger on the scanner'+(blink?' ◉':''),G); line('[click the glowing pad on the desk, or press Enter]',D);
+      }
+    }
+  } else if(S.mode==='menu'){
+    line('root@vhutali:~$ ls ./about_me',D); y+=8;
+    menuGeom.y0=y; menuGeom.lh=40;
+    SECTIONS.forEach((s,i)=>{const lab=String(i+1).padStart(2,'0')+'  '+s.id;
+      if(i===S.sel){ctx.fillStyle=G;ctx.fillRect(x-8,y-5,ctx.measureText('> '+lab).width+22,38);ctx.fillStyle=BG;ctx.fillText('> '+lab,x,y);}else{ctx.fillStyle=G;ctx.fillText('  '+lab,x,y);}
+      y+=40;});
+    y+=10; line('↑↓ or click · enter to open · type "help" · esc to stand up',D);
+  } else if(S.mode==='section'||S.mode==='msg'){
+    const s=S.mode==='section'?SECTIONS[S.sec]:null;
+    line('root@vhutali:~$ '+(s?'cat '+s.id+'.txt':S.msg.cmd),D); y+=6;
+    if(s){ctx.font='bold 30px Consolas,monospace'; ctx.fillStyle=A; ctx.fillText('# '+s.id.replace('_',' ').toUpperCase(),x,y); y+=50; ctx.font='25px Consolas,monospace';}
+    const body=s?s.body:S.msg.lines;
+    body.forEach(b=>wrap(ctx,b,W-x*2).forEach(l=>line(l,l.startsWith('[placeholder')?D:G)));
+    y=H-90; line('[backspace] menu · [esc] stand up',D);
+  } else if(S.mode==='quiz'){
+    const z=S.quiz;
+    line('root@vhutali:~$ ./trivia --questions 5',D);
+    ctx.font='bold 28px Consolas,monospace'; ctx.fillStyle=A;
+    if(z.i>=z.qs.length){
+      ctx.fillText('RESULTS',x,y); y+=56; ctx.font='bold 64px Consolas,monospace'; ctx.fillStyle=G; ctx.fillText(z.score+' / '+z.qs.length,x,y); y+=90; ctx.font='25px Consolas,monospace';
+      line(['you might be a bot.','script kiddie.','junior analyst.','solid. you could work here.','senior engineer energy.','root access granted. flawless.'][z.score],A);
+      y=H-90; line('[enter] play again · [backspace] menu',D);
+    } else {
+      const q=z.qs[z.i];
+      ctx.fillText('TRIVIA  ·  question '+(z.i+1)+'/'+z.qs.length+'  ·  score '+z.score,x,y); y+=52; ctx.font='25px Consolas,monospace';
+      wrap(ctx,q.q,W-x*2).forEach(l=>line(l,'#d8ffe6')); y+=14;
+      quizGeom.y0=y;
+      q.o.forEach((o,k)=>{const s='['+'ABC'[k]+']  '+o; let col=G;
+        if(z.picked!==null){if(k===q.a){ctx.fillStyle=G;ctx.fillRect(x-8,y-5,ctx.measureText(s+'  ✓').width+16,38);col=BG;} else if(k===z.picked){ctx.fillStyle=R;ctx.fillRect(x-8,y-5,ctx.measureText(s+'  ✗').width+16,38);col=BG;} else col=D;}
+        ctx.fillStyle=col; ctx.fillText(s+(z.picked!==null&&k===q.a?'  ✓':z.picked===k&&k!==q.a?'  ✗':''),x,y); y+=44;});
+      y+=10;
+      if(z.picked!==null)line(z.picked===q.a?'correct. +1':'nope. the answer was '+'ABC'[q.a]+'.',z.picked===q.a?G:R);
+      y=H-90; line(z.picked===null?'click an answer or press A / B / C':'[enter] next question',D);
+    }
+  } else if(S.mode==='game'){
+    const g=S.game;
+    line('root@vhutali:~$ ./crack_the_vault',D);
+    ctx.font='bold 28px Consolas,monospace'; ctx.fillStyle=g.done==='win'?G:A;
+    ctx.fillText(g.done==='win'?'VAULT OPEN':'VAULT LOCKED  ·  attempts '+'▮'.repeat(g.left)+'▯'.repeat(4-g.left),x,y); y+=50; ctx.font='25px Consolas,monospace';
+    gameGeom.y0=y;
+    g.words.forEach((w,i)=>{const s='0x'+(0xF4A0+i*12).toString(16).toUpperCase()+'  '+g.lines[i][0]+w+g.lines[i][1];
+      const tried=g.log.some(l=>l.startsWith('> '+w+' '));
+      if(i===g.sel&&!g.done){ctx.fillStyle=G;ctx.fillRect(x-8,y-5,ctx.measureText(s).width+16,36);ctx.fillStyle=BG;}else ctx.fillStyle=tried?D:G;
+      ctx.fillText(s,x,y); y+=40;});
+    // log column
+    let ly=gameGeom.y0; const lx=600;
+    g.log.slice(-6).forEach(l=>{ctx.fillStyle=l.includes('MATCH')?G:l.includes('LOCKOUT')?R:A;ctx.fillText(l,lx,ly);ly+=36;});
+    if(g.done==='win'){ly+=10;ctx.fillStyle=G;ctx.fillText('reward: fun fact unlocked',lx,ly);ly+=36;ctx.fillStyle=A;ctx.font='19px Consolas,monospace';wrap(ctx,g.fact,W-lx-30).forEach(l=>{ctx.fillText(l,lx,ly);ly+=24;});ctx.font='25px Consolas,monospace';ly+=8;ctx.fillStyle=D;ctx.fillText('[enter] play again',lx,ly);}
+    if(g.done==='lose'){ly+=10;ctx.fillStyle=D;ctx.fillText('[enter] try again',lx,ly);}
+    y=H-90; line('click a word or type it · likeness = letters in the right spot',D);
+  }
+  if(S.mode==='menu'||S.mode==='section'||S.mode==='msg'||S.mode==='game'||S.mode==='quiz'){
+    ctx.fillStyle=G; ctx.fillText('visitor@vhutali:~$ '+S.input+(blink?'█':''),x,H-50);
+  }
+  ctx.drawImage(scanlines(W,H),0,0);
+  if(t<S.glitchUntil){for(let k=0;k<9;k++){const gy=Math.random()*H,gh=4+Math.random()*40,dx=(Math.random()-0.5)*90;ctx.drawImage(main.c,0,gy,W,gh,dx,gy,W,gh);}ctx.fillStyle='rgba(255,69,69,0.10)';ctx.fillRect(0,Math.random()*H,W,30+Math.random()*80);}
+  main.tex.needsUpdate=true;
+}
+function glitch(t){S.glitchUntil=t+0.32;}
+
+// side screens
+const rainCols=Array.from({length:32},()=>Math.random()*-40);
+function drawLeft(t){
+  const {ctx,W,H}=left; ctx.fillStyle='rgba(1,4,2,0.16)'; ctx.fillRect(0,0,W,H); ctx.font='16px Consolas,monospace';
+  rainCols.forEach((v,i)=>{const ch='0123456789ABCDEF'[(Math.random()*16)|0]; ctx.fillStyle=Math.random()<0.05?'#d8ffe6':G; ctx.fillText(ch,i*16,v*16); rainCols[i]=v*16>H&&Math.random()>0.96?0:v+0.5;});
+  left.tex.needsUpdate=true;
+}
+function drawRight(t){
+  const {ctx,W,H}=right; ctx.fillStyle=BG; ctx.fillRect(0,0,W,H); ctx.font='18px Consolas,monospace'; ctx.textBaseline='top';
+  const sec=S.mode==='section'?SECTIONS[S.sec].id:S.mode==='game'?'game':S.mode==='quiz'?'quiz':'';
+  if(sec==='quiz'){
+    const z=S.quiz; ctx.fillStyle=A; ctx.font='18px Consolas,monospace'; ctx.fillText('SCOREBOARD',30,24);
+    ctx.fillStyle=G; ctx.font='bold 110px Consolas,monospace'; ctx.fillText(String(z.score),30,70);
+    ctx.font='22px Consolas,monospace'; ctx.fillStyle=D; ctx.fillText('/ '+z.qs.length+' correct',30,200);
+    z.qs.forEach((_,i)=>{ctx.fillStyle=i<z.i||(i===z.i&&z.picked!==null)?G:'#0c2a18'; ctx.fillRect(30+i*90,250,76,14);});
+  } else if(sec==='game'){
+    const g=S.game, on=Math.floor(t*3)%2===0;
+    ctx.font='bold 34px Consolas,monospace'; ctx.fillStyle=g.done==='win'?G:(on?R:'#5a1414'); ctx.fillText(g.done==='win'?'BREACH OK':'INTRUSION',30,40); ctx.fillText(g.done==='win'?'':'DETECTED',30,84);
+    ctx.font='18px Consolas,monospace'; ctx.fillStyle=A; ctx.fillText('trace progress',30,170);
+    const p=g.done?1:(4-g.left)/4+((t*0.05)%0.25); ctx.fillStyle='#2a0c0c'; ctx.fillRect(30,200,440,22); ctx.fillStyle=g.done==='win'?G:R; ctx.fillRect(30,200,440*Math.min(1,p),22);
+    ctx.fillStyle=D; ctx.fillText('they are onto you. guess fast.',30,250);
+  } else if(sec==='skills'){
+    ctx.fillStyle=A; ctx.fillText('SKILLS.load()',20,18);
+    [['JS',0.85],['React',0.75],['Node',0.7],['Java',0.7],['SQL',0.65],['AuthSec',0.85]].forEach(([n,v],i)=>{const p=Math.min(v,(t*0.8)%1.6); ctx.fillStyle=G; ctx.fillText(n.padEnd(8),20,56+i*40); ctx.fillStyle='#0c2a18'; ctx.fillRect(130,58+i*40,340,18); ctx.fillStyle=G; ctx.fillRect(130,58+i*40,340*p,18);});
+  } else if(sec==='projects'){
+    ctx.fillStyle=A; ctx.fillText('net.map  (4 nodes live)',20,18);
+    const cx=W/2,cy=H/2+16; const nodes=[0,1,2,3].map(i=>{const a=t*0.4+i*Math.PI/2;return [cx+Math.cos(a)*150,cy+Math.sin(a)*85];});
+    ctx.strokeStyle=D; ctx.lineWidth=2; nodes.forEach(a=>nodes.forEach(b=>{ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();}));
+    nodes.forEach((n,i)=>{ctx.fillStyle=i===((t*1.5)|0)%4?A:G; ctx.beginPath(); ctx.arc(n[0],n[1],10,0,7); ctx.fill();});
+  } else {
+    const cx=W/2,cy=H/2+10,r=120; ctx.strokeStyle=D; ctx.lineWidth=1.5;
+    [1,0.66,0.33].forEach(k=>{ctx.beginPath();ctx.arc(cx,cy,r*k,0,7);ctx.stroke();});
+    ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.moveTo(cx,cy-r);ctx.lineTo(cx,cy+r);ctx.stroke();
+    const a=t*1.6; const gr=ctx.createConicGradient(a-0.8,cx,cy); gr.addColorStop(0,'rgba(60,255,143,0)'); gr.addColorStop(0.12,'rgba(60,255,143,0.45)'); gr.addColorStop(0.13,'rgba(60,255,143,0)'); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+    [[0.4,0.6],[2.2,0.8],[4,0.35]].forEach(([b,d])=>{const da=((a-b)%(Math.PI*2)+Math.PI*2)%(Math.PI*2); ctx.fillStyle=`rgba(255,179,71,${Math.max(0,1-da/3)})`; ctx.beginPath(); ctx.arc(cx+Math.cos(b)*r*d,cy+Math.sin(b)*r*d,6,0,7); ctx.fill();});
+    ctx.fillStyle=G; ctx.fillText('trace: JHB, ZA',16,14); ctx.fillStyle=D; ctx.fillText('packets '+((t*913)|0),16,H-30);
+  }
+  ctx.drawImage(scanlines(W,H),0,0); right.tex.needsUpdate=true;
+}
+let hexOff=0;
+function drawTopL(t){
+  const {ctx,W,H}=topL; ctx.fillStyle=BG; ctx.fillRect(0,0,W,H); ctx.font='15px Consolas,monospace'; ctx.textBaseline='top'; hexOff+=0.6;
+  for(let i=0;i<16;i++){const n=((hexOff/18)|0)+i; let s=(n*16).toString(16).padStart(6,'0')+'  '; for(let k=0;k<8;k++)s+=(((n*31+k*17)*2654435761>>>0)%256).toString(16).padStart(2,'0')+' '; ctx.fillStyle=i%5===0?A:D; ctx.fillText(s,12,i*18-(hexOff%18));}
+  ctx.drawImage(scanlines(W,H),0,0); topL.tex.needsUpdate=true;
+}
+const cpu=Array(60).fill(0.3);
+function drawTopR(t){
+  const {ctx,W,H}=topR; ctx.fillStyle=BG; ctx.fillRect(0,0,W,H); ctx.textBaseline='top';
+  const d=new Date(); ctx.fillStyle=G; ctx.font='bold 54px Consolas,monospace'; ctx.fillText(d.toTimeString().slice(0,8),18,14);
+  ctx.font='16px Consolas,monospace'; ctx.fillStyle=D; ctx.fillText('uptime 4y 2d · load '+(0.4+Math.sin(t)*0.2).toFixed(2),20,82);
+  if(Math.random()<0.3){cpu.shift();cpu.push(0.2+Math.random()*0.6);}
+  ctx.strokeStyle=A; ctx.lineWidth=2; ctx.beginPath(); cpu.forEach((v,i)=>{const px=20+i*(W-40)/59, py=H-20-v*150; i?ctx.lineTo(px,py):ctx.moveTo(px,py);}); ctx.stroke();
+  ctx.drawImage(scanlines(W,H),0,0); topR.tex.needsUpdate=true;
+}
+function drawRain(){
+  rctx.drawImage(city,0,0); rctx.strokeStyle='rgba(170,200,210,0.35)'; rctx.lineWidth=1;
+  drops.forEach(d=>{rctx.beginPath();rctx.moveTo(d.x,d.y);rctx.lineTo(d.x-1,d.y+d.l);rctx.stroke();d.y+=d.v;if(d.y>220){d.y=-20;d.x=Math.random()*320;}});
+  rainTex.needsUpdate=true;
+}
+
+// ---------- camera poses ----------
+const standPos=new THREE.Vector3(0.9,1.6,0.2);
+const look=new THREE.Vector3(DX,1.05,DZ).sub(standPos);
+let yaw=Math.atan2(-look.x,-look.z), pitch=Math.atan2(look.y,Math.hypot(look.x,look.z));
+const yaw0=yaw;
+const euler=new THREE.Euler(0,0,0,'YXZ');
+camera.position.copy(standPos);
+function standQuat(){euler.set(pitch,yaw,0);return new THREE.Quaternion().setFromEuler(euler);}
+function seatPose(){
+  const asp=innerWidth/innerHeight; const back=Math.max(0,(1.7-asp))*0.9;
+  const p=new THREE.Vector3(DX,1.32,-2.35+back); const tmp=new THREE.PerspectiveCamera(); tmp.position.copy(p); tmp.lookAt(DX,1.22,DZ-0.1); return {p,q:tmp.quaternion.clone()};
+}
+let tween=null;
+const ease=k=>k<0.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+function tweenTo(p,q,dur,done){tween={fp:camera.position.clone(),fq:camera.quaternion.clone(),p,q,start:clock.getElapsedTime(),dur,done};}
+
+function sit(){
+  if(S.pose!=='standing')return; S.pose='moving'; hintEl.textContent='sitting down ...';
+  const {p,q}=seatPose();
+  chair.userData.spin=0;
+  tweenTo(p,q,1.9,()=>{S.pose='seated'; standBtn.style.display='block';
+    const t=clock.getElapsedTime();
+    if(!S.booted){S.booted=true;S.mode='boot';S.bootT=t;glitch(t);}
+    hintEl.textContent='↑↓ / click to choose · type "help" · Esc to stand up';
+  });
+}
+function standUp(){
+  if(S.pose!=='seated')return; S.pose='moving'; standBtn.style.display='none';
+  tweenTo(standPos.clone(),standQuat(),1.5,()=>{S.pose='standing';hintEl.textContent='drag to look around · click the desk to sit down';});
+}
+standBtn.onclick=standUp;
+
+// ---------- input ----------
+function openSection(i){S.sel=i;if(SECTIONS[i].game)return startGame();if(SECTIONS[i].quiz)return startQuiz();if(SECTIONS[i].fact)return showFact(); S.sec=i;S.sel=i;S.mode='section';S.msg=null;glitch(clock.getElapsedTime());}
+function showMsg(cmd,lines){S.mode='msg';S.msg={cmd,lines};glitch(clock.getElapsedTime());}
+function toMenu(){S.mode='menu';glitch(clock.getElapsedTime());}
+function runCmd(raw){
+  const c=raw.trim().toLowerCase(); if(!c)return;
+  const arg=c.replace(/^(cat|open|cd|less|more)\s+/,'').replace(/\.txt$/,'').replace(/^\.\//,'');
+  if(S.mode==='game'&&S.game&&S.game.words.includes(c.toUpperCase()))return guess(c);
+  if(['hack','game','play'].includes(c))return startGame();
+  if(c==='funfact'||c==='fortune'||c==='fact')return showFact();
+  if(c==='quiz'||c==='trivia')return startQuiz();
+  if(c==='help')return showMsg('help',['ls / menu ....... list sections','cat <section> ... open a section, e.g. cat skills','1-9 ............. open by number','hack ............ play crack_the_vault','quiz ............ 5 random trivia questions','funfact ......... random fun fact','whoami .......... who are you?','clear ........... back to the menu','exit ............ stand up from the desk']);
+  if(['ls','menu','clear','cd ..','ls ./about_me'].includes(c))return toMenu();
+  if(c==='whoami')return showMsg('whoami',['visitor','','you are sitting at Vhutali\'s desk. be nice to the keyboard.']);
+  if(c==='exit'||c==='logout')return standUp();
+  if(c.startsWith('sudo'))return showMsg(c,['[sudo] password for visitor: ********','visitor is not in the sudoers file.','This incident will be reported.']);
+  if(/^[1-9]$/.test(c))return openSection(+c-1);
+  const idx=SECTIONS.findIndex(s=>s.id===arg||s.id.startsWith(arg)||s.id.split('_').includes(arg));
+  if(idx>=0)return openSection(idx);
+  showMsg(c,['command not found: '+c,'','type "help" to see what works.']);
+}
+function startScan(){if(S.mode==='scan'&&S.scanT<0&&S.grantT<0){S.scanT=clock.getElapsedTime();padGlowMat.color.set(0x3cff8f);}}
+
+addEventListener('keydown',e=>{
+  if(S.pose!=='seated'){if(e.key==='Enter'&&S.pose==='standing'){sit();}return;}
+  if(e.key==='Escape'){standUp();return;}
+  if(S.mode==='scan'){if(e.key==='Enter')startScan();return;}
+  if(S.mode==='boot'||S.mode==='idle')return;
+  if(S.mode==='quiz'&&!S.input){const k='abc123'.indexOf(e.key.toLowerCase()); if(k>=0&&e.key.length===1){pickAnswer(k%3);return;} if(e.key==='Enter'){e.preventDefault();nextQ();return;}}
+  if(e.key==='Enter'){e.preventDefault(); if(S.input){const c=S.input;S.input='';runCmd(c);} else if(S.mode==='menu')openSection(S.sel); else if(S.mode==='msg'&&S.msg.fact)showFact(); else if(S.mode==='game'){if(S.game.done)startGame(); else guess(S.game.words[S.game.sel]);} else toMenu(); return;}
+  if(e.key==='Backspace'){e.preventDefault(); if(S.input)S.input=S.input.slice(0,-1); else if(S.mode!=='menu')toMenu(); return;}
+  if(S.mode==='menu'&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();S.sel=(S.sel+(e.key==='ArrowDown'?1:-1)+SECTIONS.length)%SECTIONS.length;return;}
+  if(S.mode==='game'&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();S.game.sel=(S.game.sel+(e.key==='ArrowDown'?1:-1)+8)%8;return;}
+  if(e.key.length===1&&!e.ctrlKey&&!e.metaKey&&S.input.length<40){S.input+=e.key;}
+});
+
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+let down=null, mouse={x:0,y:0};
+function pick(e){ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1); ray.setFromCamera(ndc,camera); const hits=ray.intersectObjects(scene.children,true); for(const h of hits){if(h.object===room||h.object===floor)return null; if(h.object.userData.action)return h;} return null;}
+function actionable(h){if(!h)return false;const a=h.object.userData.action;if(S.pose==='standing')return ['desk','main','chair','can','lamp','pad','note'].includes(a);if(S.pose==='seated')return ['main','can','lamp','pad','note'].includes(a);return false;}
+renderer.domElement.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,moved:false};renderer.domElement.setPointerCapture(e.pointerId);});
+renderer.domElement.addEventListener('pointermove',e=>{
+  mouse.x=e.clientX/innerWidth*2-1; mouse.y=e.clientY/innerHeight*2-1;
+  if(down){const dx=e.clientX-down.x,dy=e.clientY-down.y; if(Math.hypot(dx,dy)>5)down.moved=true;
+    if(down.moved&&S.pose==='standing'){yaw-=e.movementX*0.0035; pitch-=e.movementY*0.0035; yaw=THREE.MathUtils.clamp(yaw,yaw0-1.3,yaw0+1.3); pitch=THREE.MathUtils.clamp(pitch,-0.7,0.5);}
+    return;}
+  renderer.domElement.style.cursor=actionable(pick(e))?'pointer':'grab';
+});
+renderer.domElement.addEventListener('pointerup',e=>{
+  const wasDrag=down&&down.moved; down=null; if(wasDrag)return;
+  const h=pick(e); if(!actionable(h))return; const a=h.object.userData.action;
+  if(a==='can'){const g=h.object.userData.can;g.userData.down=!g.userData.down;return;}
+  if(a==='note'){drawNote(FACTS[factIdx++%FACTS.length]);noteFlip=1;return;}
+  if(a==='lamp'){lampLight.visible=!lampLight.visible;bulb.material.color.set(lampLight.visible?0xffc070:0x221a10);return;}
+  if(a==='pad'){if(S.pose==='seated')startScan();else sit();return;}
+  if(a==='chair'&&S.pose==='standing'){chair.userData.spin+=Math.PI*2;return;}
+  if(S.pose==='standing'){sit();return;}
+  if(a==='main'&&S.pose==='seated'){
+    if(S.mode==='scan'){startScan();return;}
+    if(S.mode==='menu'&&h.uv){const cy=(1-h.uv.y)*main.H; const i=Math.floor((cy-menuGeom.y0+5)/menuGeom.lh); if(i>=0&&i<SECTIONS.length)openSection(i);}
+    else if(S.mode==='quiz'&&h.uv){const z=S.quiz; if(z.i>=z.qs.length){startQuiz();return;} if(z.picked!==null){nextQ();return;} const cy=(1-h.uv.y)*main.H; const k=Math.floor((cy-quizGeom.y0+5)/quizGeom.lh); if(k>=0&&k<3)pickAnswer(k);}
+    else if(S.mode==='msg'&&S.msg.fact)showFact();
+    else if(S.mode==='game'&&h.uv){if(S.game.done){startGame();return;} const cy=(1-h.uv.y)*main.H; const i=Math.floor((cy-gameGeom.y0+5)/gameGeom.lh); if(h.uv.x<0.57&&i>=0&&i<8){S.game.sel=i;guess(S.game.words[i]);}}
+    else if(S.mode==='section'||S.mode==='msg')toMenu();
+  }
+});
+
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);composer.setSize(innerWidth,innerHeight);});
+
+// ---------- loop ----------
+const clock=new THREE.Clock();
+let chairRot=0, first=true;
+function loop(){
+  const t=clock.getElapsedTime();
+  if(tween){const k=Math.min(1,(t-tween.start)/tween.dur),e=ease(k); camera.position.lerpVectors(tween.fp,tween.p,e); camera.position.y-=Math.sin(k*Math.PI)*0.12; camera.quaternion.slerpQuaternions(tween.fq,tween.q,e); if(k>=1){const d=tween.done;tween=null;d&&d();}}
+  else if(S.pose==='standing'){euler.set(pitch+Math.sin(t*0.5)*0.004,yaw+Math.sin(t*0.3)*0.006,0);camera.quaternion.setFromEuler(euler);}
+  else if(S.pose==='seated'){const {q}=seatPose(); const off=new THREE.Quaternion().setFromEuler(new THREE.Euler(-mouse.y*0.06,-mouse.x*0.09,0,'YXZ')); camera.quaternion.copy(q).multiply(off);}
+  // props
+  chairRot+= (chair.userData.spin-chairRot)*0.05; chair.rotation.y=chairRot;
+  cans.forEach(g=>{g.userData.k+=((g.userData.down?1:0)-g.userData.k)*0.15; g.rotation.z=g.userData.dir*g.userData.k*Math.PI/2; g.position.y=DY+0.025+g.userData.k*0.03;});
+  if(S.mode==='scan'&&S.scanT<0){padGlowMat.color.setRGB(0.12,0.4+0.5*(0.5+0.5*Math.sin(t*5)),0.25);} else if(S.grantT<0&&S.scanT<0){padGlowMat.color.set(0x1f8f50);}
+  noteFlip*=0.88; note.rotation.x=-noteFlip*1.2;
+  rackLeds.forEach(m=>{if(Math.random()<0.04)m.visible=!m.visible;});
+  screenLight.intensity=2.0+Math.sin(t*13)*0.08+(t<S.glitchUntil?Math.random()*1.5:0);
+  drawMain(t); drawLeft(t); drawRight(t); drawTopL(t); drawTopR(t); drawRain();
+  composer.render();
+  if(first){first=false;document.getElementById('loading').remove();}
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+<script>
+  // if the 3D module fails to load (offline, old browser), say so instead of a blank page
+  setTimeout(()=>{const l=document.getElementById('loading'); if(l) l.textContent='3D failed to load. Check your internet connection (three.js comes from a CDN) or try Chrome/Edge.';},8000);
+</script>
+</body>
+</html>

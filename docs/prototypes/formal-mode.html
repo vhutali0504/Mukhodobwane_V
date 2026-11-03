@@ -1,0 +1,112 @@
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  .fm{--bg:#F7F5F0;--ink:#14213D;--muted:#5B6474;--line:#E2DDD2;--card:#FFFFFF;--accent:#E8730C;--navy:#1F3A5F;
+      background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",sans-serif;border-radius:10px;overflow:hidden;border:1px solid #ddd;margin-top:12px}
+  .fm *{box-sizing:border-box}
+  .fm .mono{font-family:"IBM Plex Mono",monospace}
+  .fm header{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--line)}
+  .fm .logo{font-weight:800;letter-spacing:-.02em}
+  .fm nav{display:flex;gap:26px;font-size:14px;color:var(--muted);align-items:center}
+  .fm nav a{position:relative;color:inherit;text-decoration:none}
+  .fm nav a:after{content:"";position:absolute;left:0;bottom:-4px;height:2px;width:0;background:var(--accent);transition:width .25s}
+  .fm nav a:hover{color:var(--ink)} .fm nav a:hover:after{width:100%}
+  .fm .toggle{display:flex;align-items:center;gap:8px;font-size:12px;background:var(--ink);color:#fff;border:0;border-radius:999px;padding:7px 12px 7px 8px;cursor:pointer;font-family:"IBM Plex Mono",monospace}
+  .fm .toggle i{width:26px;height:14px;border-radius:9px;background:#3cff8f33;position:relative;display:block}
+  .fm .toggle i:after{content:"";position:absolute;left:2px;top:2px;width:10px;height:10px;border-radius:50%;background:#3cff8f;animation:nudge 2.4s infinite}
+  @keyframes nudge{0%,70%,100%{left:2px}80%,90%{left:5px}}
+  .fm .hero{display:grid;grid-template-columns:1.4fr 1fr;gap:40px;padding:56px 40px 44px;align-items:center}
+  .fm .kicker{font-size:13px;color:var(--muted);margin:0 0 14px}
+  .fm h1{font-size:52px;line-height:1.02;letter-spacing:-.035em;margin:0 0 18px;font-weight:800}
+  .fm h1 span{display:inline-block;overflow:hidden;vertical-align:bottom}
+  .fm h1 span b{display:inline-block;font-weight:800;transform:translateY(105%);animation:up .7s cubic-bezier(.2,.8,.2,1) forwards}
+  .fm h1 span:nth-child(2) b{animation-delay:.12s}
+  @keyframes up{to{transform:none}}
+  .fm .role{font-size:18px;color:var(--navy);font-weight:600;margin:0 0 12px;min-height:1.4em}
+  .fm .role .cur{display:inline-block;width:2px;height:1em;background:var(--accent);vertical-align:-2px;margin-left:2px;animation:bl 1s steps(1) infinite}
+  @keyframes bl{50%{opacity:0}}
+  .fm .lede{color:var(--muted);line-height:1.6;max-width:520px;margin:0 0 26px}
+  .fm .ctas{display:flex;gap:12px;flex-wrap:wrap}
+  .fm .btn{padding:12px 20px;border-radius:8px;font-weight:600;font-size:14px;border:1.5px solid var(--ink);cursor:pointer;transition:transform .15s,background .2s,color .2s}
+  .fm .btn:active{transform:scale(.97)}
+  .fm .solid{background:var(--ink);color:#fff} .fm .solid:hover{background:var(--navy)}
+  .fm .ghost{background:transparent;color:var(--ink)} .fm .ghost:hover{background:var(--ink);color:#fff}
+  .fm .avail{margin-top:18px;font-size:13px;color:var(--muted)} .fm .avail b{color:#1d7a46}
+  .fm .photo{width:100%;max-width:340px;justify-self:end;aspect-ratio:4/5;border-radius:14px;background:linear-gradient(160deg,#E9E4D8,#D9D2C3);position:relative;display:flex;align-items:flex-end;padding:16px;box-shadow:0 20px 40px rgba(20,33,61,.12)}
+  .fm .photo .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#a49a86;font-size:13px}
+  .fm .idcard{background:#fff;border-radius:10px;padding:12px 14px;width:100%;box-shadow:0 6px 18px rgba(20,33,61,.12);display:flex;justify-content:space-between;align-items:center;font-size:13px;position:relative}
+  .fm .stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .fm .stat{padding:22px 40px;border-right:1px solid var(--line)} .fm .stat:last-child{border-right:0}
+  .fm .stat strong{display:block;font-size:30px;letter-spacing:-.03em} .fm .stat span{font-size:13px;color:var(--muted)}
+  .fm .work{padding:44px 40px}
+  .fm .work h2{font-size:26px;letter-spacing:-.02em;margin:0 0 20px}
+  .fm .row{display:grid;grid-template-columns:60px 1fr auto;gap:20px;align-items:center;padding:20px 0;border-top:1px solid var(--line);cursor:pointer;transition:padding .25s}
+  .fm .row:hover{padding-left:10px} .fm .row:hover .arrow{transform:translateX(6px);color:var(--accent)}
+  .fm .row .n{color:var(--muted);font-size:13px} .fm .row h3{margin:0 0 4px;font-size:18px} .fm .row p{margin:0;color:var(--muted);font-size:14px}
+  .fm .arrow{transition:transform .25s,color .25s;font-size:20px}
+  .fm .tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap} .fm .tags span{font-size:11px;border:1px solid var(--line);padding:2px 8px;border-radius:99px;color:var(--muted);background:#fff}
+  .notes{margin-top:22px}
+  @media(max-width:800px){.fm .hero{grid-template-columns:1fr}.fm .stats{grid-template-columns:1fr 1fr}.fm nav a{display:none}}
+</style>
+
+<h2>Formal mode: "young professional" direction</h2>
+<p class="subtitle">A rough look, not final. The animations on this page are live. Reload to watch the name come in.</p>
+
+<div class="fm">
+  <header>
+    <span class="logo">Vhutali M.</span>
+    <nav>
+      <a href="#">Work</a><a href="#">Experience</a><a href="#">Skills</a><a href="#">Contact</a>
+      <button class="toggle" title="Switch to the 3D hacker room"><i></i>hacker mode</button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="kicker mono">Johannesburg, South Africa</p>
+      <h1><span><b>Mukhodobwane</b></span><br><span><b>Vhutalihandivho</b></span></h1>
+      <p class="role"><span id="roleTxt"></span><span class="cur"></span></p>
+      <p class="lede">Final-year BSc Computer Science and Informatics student at the University of Johannesburg and co-founder of a web development agency. I build full-stack web apps with secure authentication, and I'm hungry to grow in a structured, high-intensity environment.</p>
+      <div class="ctas"><button class="btn solid">View my work</button><button class="btn ghost">Download CV</button></div>
+      <p class="avail"><b>●</b> Open to graduate roles, 2027</p>
+    </div>
+    <div class="photo">
+      <div class="ph">your professional photo</div>
+      <div class="idcard"><span><strong>Co-Founder &amp; Technical Lead</strong><br><span style="color:#5B6474">Elevate Digital Solutions</span></span><span class="mono" style="font-size:11px;color:#5B6474">UJ '26</span></div>
+    </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><strong data-n="5">0</strong><span>projects built</span></div>
+    <div class="stat"><strong data-n="5">0</strong><span>programming languages</span></div>
+    <div class="stat"><strong data-n="2">0</strong><span>junior students mentored</span></div>
+    <div class="stat"><strong data-n="2024">0</strong><span>co-founded Elevate Digital Solutions</span></div>
+  </div>
+
+  <section class="work">
+    <h2>Selected work</h2>
+    <div class="row"><span class="n mono">01</span><div><h3>MutualTrust – Student Management System (KSMS)</h3><p>Final-year project. Built frontend and backend for student, teacher, centre manager and admin roles, with full ownership of auth: dual-token JWT, HTTP-only cookies, email OTP MFA, refresh queue.</p><div class="tags"><span>React</span><span>Node.js</span><span>PostgreSQL</span></div></div><span class="arrow">→</span></div>
+    <div class="row"><span class="n mono">02</span><div><h3>Fingerprint Recognition System</h3><p>Graph-based matching pipeline: Zhang-Suen skeletonisation, minutiae as graph nodes, k-NN matching on FVC2002 / FVC2004.</p><div class="tags"><span>Java</span><span>Graph algorithms</span></div></div><span class="arrow">→</span></div>
+    <div class="row"><span class="n mono">03</span><div><h3>Thusa Lushaka Empowerment – NPO Website</h3><p>Client project through EDS. Built, deployed and pitched a full site for a youth NPO in Nzhelele, Limpopo.</p><div class="tags"><span>React</span><span>Vite</span><span>Netlify</span></div></div><span class="arrow">→</span></div>
+    <div class="row"><span class="n mono">04</span><div><h3>Job Application Tracker</h3><p>Live full-stack app: REST API on Railway, frontend on Netlify, JWT + bcrypt, real CORS issues solved.</p><div class="tags"><span>Node.js</span><span>Express</span><span>PostgreSQL</span></div></div><span class="arrow">→</span></div>
+  </section>
+</div>
+
+<div class="notes">
+  <h3>Kinds of movement. Click the ones you like:</h3>
+  <div class="options" data-multiselect>
+    <div class="option" data-choice="name-rise" onclick="toggleSelect(this)"><div class="letter">A</div><div class="content"><h3>Name rises in on load</h3><p>Your name slides up from behind a line when the page opens (live above).</p></div></div>
+    <div class="option" data-choice="typed-role" onclick="toggleSelect(this)"><div class="letter">B</div><div class="content"><h3>Typed role line</h3><p>Cycles "Software Developer", "Security-minded", "Full-stack" with a typing cursor (live above).</p></div></div>
+    <div class="option" data-choice="count-up" onclick="toggleSelect(this)"><div class="letter">C</div><div class="content"><h3>Numbers count up</h3><p>The stats strip ticks up from 0 (live above).</p></div></div>
+    <div class="option" data-choice="hover" onclick="toggleSelect(this)"><div class="letter">D</div><div class="content"><h3>Hover and press feedback</h3><p>Project rows slide and their arrows move, nav links get an underline, buttons press in.</p></div></div>
+    <div class="option" data-choice="expand" onclick="toggleSelect(this)"><div class="letter">E</div><div class="content"><h3>Projects open in place</h3><p>Clicking a project row smoothly expands it to show details, screenshots and links.</p></div></div>
+    <div class="option" data-choice="switch" onclick="toggleSelect(this)"><div class="letter">F</div><div class="content"><h3>The mode switch moment</h3><p>Clicking "hacker mode" glitches the page out, the lights go off, and you land in the 3D room.</p></div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const roles=['Full-stack developer','Co-founder, Elevate Digital Solutions','Secure authentication builder'];let r=0,i=0,del=false;const el=document.getElementById('roleTxt');
+  (function tick(){const w=roles[r];el.textContent=w.slice(0,i);if(!del&&i<w.length)i++;else if(!del){del=true;return setTimeout(tick,1500);}else if(i>0)i--;else{del=false;r=(r+1)%roles.length;}setTimeout(tick,del?35:70);})();
+  document.querySelectorAll('.fm [data-n]').forEach(n=>{const to=+n.dataset.n;let k=0;const s=performance.now();(function f(t){k=Math.min(1,(t-s)/1200);n.textContent=Math.round(to*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f);})(s);});
+})();
+</script>
