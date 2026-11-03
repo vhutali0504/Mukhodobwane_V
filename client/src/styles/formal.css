@@ -260,3 +260,29 @@
   .name-line b { transform: none; }
   .mode-switch-track::after { animation: none; }
 }
+
+/* Stats strip (never hidden or faded; only the numbers change) */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.stat {
+  min-width: 0;
+  padding: 22px clamp(var(--s-4), 3vw, 40px);
+  border-right: 1px solid var(--line);
+}
+.stat:last-child { border-right: 0; }
+.stat strong {
+  display: block;
+  font-size: 30px;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.stat span { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+@media (max-width: 720px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stat:nth-child(2n) { border-right: 0; }
+  .stat:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
+}

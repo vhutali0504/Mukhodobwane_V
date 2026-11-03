@@ -5,6 +5,7 @@ import TopBar from '../components/layout/TopBar.jsx'
 import Footer from '../components/layout/Footer.jsx'
 import MobileCta from '../components/layout/MobileCta.jsx'
 import Hero from '../components/formal/Hero.jsx'
+import Stats from '../components/formal/Stats.jsx'
 
 export default function Home() {
   useDocumentMeta({
@@ -16,6 +17,7 @@ export default function Home() {
       <TopBar />
       <main id="main">
         <Hero />
+        <Stats />
       </main>
       <Footer />
       <MobileCta />
