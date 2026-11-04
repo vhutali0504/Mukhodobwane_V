@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 
 export const HINTS = {
   standing: 'drag to look around · click the desk to sit down',
-  seated: '↑↓ / click to choose · type "help" · Esc to stand up',
+  seated: '↑↓ / click to choose · drag to look around · Esc to stand up',
 }
 
 function hintFor(pose, movingTo) {

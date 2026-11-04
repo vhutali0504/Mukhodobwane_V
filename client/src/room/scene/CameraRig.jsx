@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { DX, DZ } from './layout.js'
+import { dragSeatedLook } from './seatedLook.js'
 
 const STAND_POS = new THREE.Vector3(0.9, 1.6, 0.2)
 const LOOK = new THREE.Vector3(DX, 1.05, DZ).sub(STAND_POS)
@@ -38,11 +39,11 @@ export function CameraRig({ pose, onArrive, reducedMotion = false }) {
       at: pose === 'seated' ? 'seated' : 'standing',
       yaw: YAW0,
       pitch: PITCH0,
+      look: { yaw: 0, pitch: 0 },
       tween: null,
       drag: null,
       seat: new THREE.PerspectiveCamera(),
       euler: new THREE.Euler(0, 0, 0, 'YXZ'),
-      offset: new THREE.Quaternion(),
       par: new THREE.Vector2(),
     }
   }
@@ -72,8 +73,10 @@ export function CameraRig({ pose, onArrive, reducedMotion = false }) {
     if (pose !== 'moving' || s.tween) return
     const to = s.at === 'seated' ? 'standing' : 'seated'
     const target = new THREE.PerspectiveCamera()
-    if (to === 'seated') seatPose(size.width / size.height, target)
-    else {
+    if (to === 'seated') {
+      seatPose(size.width / size.height, target)
+      s.look = { yaw: 0, pitch: 0 }
+    } else {
       target.position.copy(STAND_POS)
       target.quaternion.setFromEuler(s.euler.set(s.pitch, s.yaw, 0))
     }
@@ -89,8 +92,9 @@ export function CameraRig({ pose, onArrive, reducedMotion = false }) {
     }
   }, [pose, camera, size, reducedMotion])
 
-  // Drag to look around while standing. Pointer capture keeps the drag alive
-  // when the pointer leaves the canvas.
+  // Drag to look around, standing or seated (seated turns are limited so the
+  // desk stays in view). Pointer capture keeps the drag alive when the pointer
+  // leaves the canvas.
   useEffect(() => {
     const el = gl.domElement
     const s = r.current
@@ -107,6 +111,9 @@ export function CameraRig({ pose, onArrive, reducedMotion = false }) {
       if (d.moved && s.at === 'standing' && !s.tween) {
         s.yaw = THREE.MathUtils.clamp(s.yaw - (e.clientX - d.lx) * DRAG_SPEED, YAW0 - YAW_RANGE, YAW0 + YAW_RANGE)
         s.pitch = THREE.MathUtils.clamp(s.pitch - (e.clientY - d.ly) * DRAG_SPEED, PITCH_MIN, PITCH_MAX)
+      }
+      if (d.moved && s.at === 'seated' && !s.tween) {
+        s.look = dragSeatedLook(s.look, e.clientX - d.lx, e.clientY - d.ly)
       }
       d.lx = e.clientX
       d.ly = e.clientY
@@ -150,13 +157,17 @@ export function CameraRig({ pose, onArrive, reducedMotion = false }) {
       cam.position.copy(STAND_POS)
       cam.quaternion.setFromEuler(s.euler.set(s.pitch + swayP, s.yaw + swayY, 0))
     } else {
-      // Seated: a small parallax that follows the pointer.
+      // Seated: the dragged head turn plus a small parallax that follows the pointer.
       seatPose(state.size.width / state.size.height, s.seat)
       s.par.x = THREE.MathUtils.damp(s.par.x, state.pointer.x, 6, dt)
       s.par.y = THREE.MathUtils.damp(s.par.y, state.pointer.y, 6, dt)
-      s.offset.setFromEuler(s.euler.set(s.par.y * 0.06, -s.par.x * 0.09, 0))
+      // Build the angle from absolute yaw and pitch (no roll), so looking up and
+      // to the side at once never tilts the horizon.
+      s.euler.setFromQuaternion(s.seat.quaternion, 'YXZ')
+      const pitch = s.euler.x + s.look.pitch + s.par.y * 0.06
+      const yaw = s.euler.y + s.look.yaw - s.par.x * 0.09
       cam.position.copy(s.seat.position)
-      cam.quaternion.copy(s.seat.quaternion).multiply(s.offset)
+      cam.quaternion.setFromEuler(s.euler.set(pitch, yaw, 0, 'YXZ'))
     }
   })
 

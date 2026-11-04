@@ -179,7 +179,7 @@ describe('room UI', () => {
     it('seated shows the terminal hint and a stand-up button', () => {
       const onStand = vi.fn()
       withRouter(<RoomHud pose="seated" onStand={onStand} />)
-      expect(screen.getByText('↑↓ / click to choose · type "help" · Esc to stand up')).toBeInTheDocument()
+      expect(screen.getByText('↑↓ / click to choose · drag to look around · Esc to stand up')).toBeInTheDocument()
       expect(screen.getByRole('link', { name: 'Exit to formal' })).toHaveAttribute('href', '/')
       button('Stand up').click()
       expect(onStand).toHaveBeenCalled()
