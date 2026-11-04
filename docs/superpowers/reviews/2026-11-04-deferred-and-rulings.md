@@ -1,0 +1,58 @@
+## Rulings
+- Ruling R1: in Task 4 the /room Suspense fallback is a minimal inline `<div role="status">Loading…</div>`. Task 12 swaps in LoadingScreen. Why: T4 can't import a component T12 creates. Cost if wrong: one line changed in T12.
+- Ruling R2: portrait outputs are widths 480 and 600 (files portrait-480.* and portrait-600.*), with no upscaling. T5's `<picture>` srcset uses 480w/600w, and T9's test checks those names. Why: the spec says crop 4:5 from a 720 px-wide source, and the 600 px crop can't honestly make a 720 px file. Cost if wrong: file renames.
+- Ruling R3: the e2e suite runs against a test-mode build. Add the script `build:test` = `vite build --mode test`, and Playwright's webServer runs `npm run build:test && npx vite preview --port 4173`. `__roomDebug` is exposed only when `import.meta.env.MODE === 'test'`, so it never ships to Netlify, which runs `npm run build`. Why: this keeps the hook out of production while e2e can still read it. Cost if wrong: e2e config edits.
+- Ruling R4: T13's GlitchOverlay should reuse or extend the T12 room glitch styles where practical. Duplication is a review-minor, not a blocker. Cost if wrong: small refactor.
+- Task 1: minor (deferred): eslint ignores lacks .superpowers
+- Task 1: minor (deferred): varsIgnorePattern '^[A-Z_]' broader than needed
+- Task 1: minor (deferred): DECISIONS.md new entries need their own date headings
+- Task 2: dispatched (BASE a3cd9e6, implementer a5cb11362153fb122, sonnet). Ruling: replace prototype vault word HASHY (not a real word) with a real 5-letter tech word — spec §6 'accurate' + no invented content — cost if wrong: one word.
+- Task 2: minor (deferred): vaultWords.js comment says "all real words" but includes HTTPS/REGEX/LINUX
+- Task 2: minor (deferred): trivia "father of computer science" contestable; reword to unambiguous Turing question
+- Task 2: minor (deferred): trivia test doesn't check options non-empty/distinct
+- Ruling: the focus indicator uses `outline: 2px solid var(--navy)` with offset 2px (10.5:1). The accent stays a brand colour only. Add focus pairs navy/bg ≥3 and navy/card ≥3 to check-contrast, using a non-text threshold of 3. Room surfaces use --room-green for focus (add the pair room-green/room-bg ≥3). Why: the spec's ground rules (contrast, keyboard nav) bind over the plan's "focus in --accent". Cost if wrong: the focus ring colour changes, purely cosmetic.
+- Task 3: minor (deferred): no unit test for the contrast helper
+- Task 3: minor (deferred): navy focus ring on navy surfaces. Mitigated by outline-offset 2px (the ring sits on the page bg). Check dark pills/buttons in T5.
+- Task 4: minor (deferred): /room lazy route untested in unit tests (covered by T13 e2e)
+- Task 4: minor (deferred): 404 test should use getByRole heading
+- Task 4: minor (deferred): noindex meta for /thanks and 404 (T13/T14 SEO)
+- Task 5: minor (deferred): mobile menu needs Escape-to-close and focus return
+- Task 5: minor (deferred): useTypewriter throws on empty phrases
+- Task 5: minor (deferred): unneeded MemoryRouter in the footer test
+- Task 5: minor (deferred): nav underline only on hover, not on focus-visible
+- Task 5: minor (deferred): internal /room and /privacy plain anchors cause full reloads (T13 decides)
+- Task 6: minor (deferred): the "never restarts" test should fire a second intersect
+- Task 7: minor (deferred): hover row slide animates padding (layout); hover not gated by (hover:hover)
+- Task 7: minor (deferred): reduced motion handled twice (JS class + media query)
+- Task 7: minor (deferred): long accessible name on the row button
+- Task 7: minor (deferred): no RED step (process lapse; tests are real)
+- Ruling: project titles in profile.js must match the CV exactly (en dash), e.g. "MutualTrust – Student Management System (KSMS)" and "Thusa Lushaka Empowerment – NPO Website". The en dash is a CV title, not prose, so the em-dash ban doesn't apply. Fixed inside the T8 dispatch as a small extra. Cost if wrong: a cosmetic punctuation change.
+- Task 8: minor (deferred): focus not restored after a failed submit; no pending live announcement
+- Task 8: minor (deferred): component tests lack a network-reject/timeout case; the ref guard isn't exercised
+- Task 8: minor (deferred): disabled button opacity .7 may lower contrast
+- Task 8: minor (deferred): a retry after timeout may duplicate a message (inherent)
+- Task 9: minor (deferred): the CV test compares size only; no dimension checks on OG and portraits; WIDTHS not tied to CROP.width
+- Task 10: minor (deferred): ctx spread lets undefined override defaults; step silently falls back to Math.random when ctx is omitted
+- Task 10: minor (deferred): game-ended candidate words are swallowed; vault imports shuffled from quiz
+- Task 10: minor (deferred): test gaps: out-of-range clickLine, Escape during boot or scan, 'ls ./about_me'
+- Ruling: add scrolling to the engine (an extension of the T10 interface). T gains `scroll` (0-based line offset) and `scrollMax`. New action {type:'setScrollMax', max} is dispatched by the UI after a draw when the renderer reports a different max; the engine clamps scroll to it. In section/msg modes, ArrowDown/ArrowUp move ±1, PageDown/PageUp/Space (empty input) move ±page (page = 12). New action {type:'scroll', delta} is for the wheel and touch. scroll resets to 0 on every mode/section/fact change. drawMain skips `scroll` body lines, draws a `[more ▼ n/total]` indicator when clipped, and returns {menuY0, lineH, scrollMax}. The footer hint mentions ↑↓. Why: spec §6 says sections show the CV content, and the content must be readable. Cost if wrong: an engine and renderer refactor.
+- Task 11: minor (deferred): weak drawNote wrap test; no ellipsis on very long facts
+- Task 11: minor (deferred): dead setup in the BIOMETRIC test
+- Task 11: minor (deferred): heading spacing
+- Task 11: minor (deferred): scrollMax is stale across a section change until the next setScrollMax; the last body line overlaps the footer by a few px
+- Task 12: minor (deferred): visibleSince grace starts at 0, not mount; no webglcontextlost handling (blank-canvas class; final review should weigh it)
+- Task 12: minor (deferred): no unit tests for SceneBoundary / slow path / hasWebGL / texture throttle
+- Task 12: minor (deferred): aria-live on the whole fallback output; pointer:coarse only; caret blink in the Suspense fallback
+- Task 13: dispatched (BASE 9fd78ae, implementer ad43e08a7f5b872a6, sonnet). Ruling: test-mode-only ?e2e3d=1 disables the FPS monitor and first-frame timeout for e2e — keeps the production fallback intact while making e2e deterministic — cost if wrong: e2e config change.
+- Task 13: minor (deferred): style-src 'unsafe-inline' is probably unneeded (try removing it in the CSP check)
+- Task 13: minor (deferred): first-frame timeout has no e2e
+- Task 13: minor (deferred): Back during the glitch: the pending navigate still fires
+- Task 13: minor (deferred): static og:url
+- Task 13: minor (deferred): Sentry regional ingest hosts
+- Task 13: minor (deferred): check-bundle relies on three's markers
+- Task 13: minor (deferred): the netlify.toml:11 comment still says style-src allows inline (fix it in T14 in passing)
+- Task 14: minor (deferred): checklist lacks rows for spec §8 Reliability and the third-party-script audit; wrong DECISIONS citation in the Licences row; alt text checked on / only; README says Node 20+ with no engines field; preview-site sitemap host
+- Ruling: Important #5 (phone in repo history) is parked with no history rewrite. The owner explicitly chose to publish the full CV, phone included, as the public Download CV (spec §9.1), and that same PDF is committed and served, so the plan text adds no new exposure. A history rewrite is destructive and gains nothing here. It is surfaced to the owner in the final message with the option to redact before the first push. Cost if wrong: the owner asks for a redact and history rewrite before pushing (cheap while there is no remote).
+- Ruling: the final fix wave includes Important #1-#4, the reviewer's 5 fix-before-merge minors, and cheap new minors that touch honesty or spec: the 2D `exit` command; boot on first visit only per session (spec §6); privacy page naming Sentry and Netlify's spam filtering; a correct message for the first-frame timeout; the stale --focus-room comment; /privacy in the sitemap. Why: one wave, small edits. Cost if wrong: minor rework.
+- Final: parked — stray 0x85 byte in LAUNCH_CHECKLIST.md:31 — Ruling: cosmetic doc encoding glitch, real but nothing builds on it; tell the owner.
+- Final: parked — context-lost reuses the 'error' wording — Ruling: cosmetic, real and deferred.
