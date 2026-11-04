@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { render, screen, cleanup, within, renderHook, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Routes, Route } from 'react-router'
 import { createTerminal, step } from '../../client/src/room/terminal/engine.js'
 import { MENU } from '../../client/src/room/terminal/constants.js'
 import { profile } from '../../client/src/content/profile.js'
@@ -199,6 +199,45 @@ describe('room UI', () => {
     })
   })
 
+  it('TerminalFallback: typing exit leaves for the formal site', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/room']}>
+        <Routes>
+          <Route path="/room" element={<RoomShell />} />
+          <Route path="/" element={<p>FORMAL HOME</p>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    await user.type(screen.getByRole('textbox', { name: 'Command' }), 'exit{Enter}')
+    expect(await screen.findByText('FORMAL HOME')).toBeInTheDocument()
+  })
+
+  describe('boot sequence is first-visit-only per session', () => {
+    beforeEach(() => sessionStorage.clear())
+    afterEach(() => sessionStorage.clear())
+
+    it('initRoom with seen starts past boot and the scan', () => {
+      expect(initRoom({ now: 0 }).t.mode).toBe('idle')
+      expect(initRoom({ now: 0, seen: true }).t.mode).toBe('menu')
+    })
+
+    it('a first 3D visit starts idle; a later one starts at the menu', () => {
+      hasWebGL.mockReturnValue(true)
+      withRouter(<RoomShell />)
+      expect(window.__roomDebug().mode).toBe('idle')
+      cleanup()
+      sessionStorage.setItem('room-booted', '1')
+      withRouter(<RoomShell />)
+      expect(window.__roomDebug().mode).toBe('menu')
+    })
+
+    it('leaving the intro records the flag', () => {
+      withRouter(<RoomShell />)
+      expect(sessionStorage.getItem('room-booted')).toBe('1')
+    })
+  })
+
   describe('roomReducer (pose + engine)', () => {
     it('sit is a camera move; the engine boots only on arrival', () => {
       let s = initRoom({ now: 0 })
@@ -265,7 +304,8 @@ describe('room UI', () => {
       await act(async () => {
         vi.advanceTimersByTime(200)
       })
-      expect(screen.getByText('The 3D room is running too slowly on this device')).toBeInTheDocument()
+      expect(screen.getByText('The 3D room is taking too long to start')).toBeInTheDocument()
+      expect(screen.queryByText(/too slowly/)).toBeNull()
       expect(button('Try the 3D room anyway')).toBeInTheDocument()
       expect(screen.getByRole('textbox', { name: 'Command' })).toBeInTheDocument()
     })

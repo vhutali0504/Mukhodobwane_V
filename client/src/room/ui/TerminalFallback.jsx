@@ -8,6 +8,7 @@ import { TerminalButtons } from './TouchControls.jsx'
 const REASONS = {
   nowebgl: "Your device can't run the 3D room",
   slow: 'The 3D room is running too slowly on this device',
+  timeout: 'The 3D room is taking too long to start',
   error: "The 3D room couldn't load",
   chosen: 'Text-only view of the room',
 }

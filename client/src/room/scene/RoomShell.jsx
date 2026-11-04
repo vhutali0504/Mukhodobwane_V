@@ -1,6 +1,7 @@
 import '@fontsource/ibm-plex-mono/700.css'
 import '../../styles/room.css'
 import { Component, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { GLITCH_MS } from '../terminal/constants.js'
 import { profile } from '../../content/profile.js'
 import { FACTS } from '../../content/facts.js'
@@ -21,6 +22,23 @@ const TIMED_MODES = ['boot', 'scan', 'granted']
 // shader compile) counts as a slow device: switch to the 2D terminal.
 export const FIRST_FRAME_TIMEOUT_MS = 10000
 const now = () => performance.now()
+
+// The boot sequence plays on the first visit of a browser session only.
+const BOOTED_KEY = 'room-booted'
+const wasBooted = () => {
+  try {
+    return sessionStorage.getItem(BOOTED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+const markBooted = () => {
+  try {
+    sessionStorage.setItem(BOOTED_KEY, '1')
+  } catch {
+    /* storage blocked: the intro just replays next time */
+  }
+}
 
 // Test-mode builds only (`vite build --mode test`) plus `?e2e3d=1`: software WebGL is
 // too slow for the FPS monitor and first-frame timeout. Production can never enable it.
@@ -44,11 +62,12 @@ class SceneBoundary extends Component {
 // Owns the terminal state (useReducer around the engine's step) and the camera
 // pose, and renders the 3D room or the 2D TerminalFallback.
 export function RoomShell() {
+  const navigate = useNavigate()
   const reducedMotion = useReducedMotion()
   const coarse = useCoarsePointer()
   const [fallback, setFallback] = useState(() => (hasWebGL() ? null : 'nowebgl'))
   const [monitorFps, setMonitorFps] = useState(() => !e2eNoSlowCheck())
-  const [state, dispatch] = useReducer(roomReducer, fallback, (fb) => initRoom({ now: now(), twoD: !!fb }))
+  const [state, dispatch] = useReducer(roomReducer, fallback, (fb) => initRoom({ now: now(), twoD: !!fb, seen: wasBooted() }))
   const { t, pose, movingTo } = state
 
   const termRef = useRef(t)
@@ -65,6 +84,15 @@ export function RoomShell() {
   useEffect(() => {
     if (state.glitchSeq) glitchRef.current = now() + GLITCH_MS
   }, [state.glitchSeq])
+
+  useEffect(() => {
+    if (t.mode !== 'idle') markBooted()
+  }, [t.mode])
+
+  // The 2D view has no desk to stand up from: `exit` leaves for the formal site.
+  useEffect(() => {
+    if (fallback && state.effects.includes('standUp')) navigate('/')
+  }, [fallback, state.effects, state.seq, navigate])
 
   // Boot, scan and grant advance on time.
   const timed = TIMED_MODES.includes(t.mode)
@@ -90,6 +118,7 @@ export function RoomShell() {
     dispatch({ type: 'enter2d', now: now() })
   }, [])
   const onSlow = useCallback(() => goTo2d('slow'), [goTo2d])
+  const onTimeout = useCallback(() => goTo2d('timeout'), [goTo2d])
   const onSceneError = useCallback(() => goTo2d('error'), [goTo2d])
   const onTextOnly = useCallback(() => goTo2d('chosen'), [goTo2d])
 
@@ -107,19 +136,19 @@ export function RoomShell() {
       id = setTimeout(() => {
         if (firstFrameSeen.current) return
         if (document.hidden) arm()
-        else onSlow()
+        else onTimeout()
       }, FIRST_FRAME_TIMEOUT_MS)
     }
     arm()
     return () => clearTimeout(id)
-  }, [fallback, onSlow])
+  }, [fallback, onTimeout])
 
   const glitch = state.glitchSeq > 0 && !reducedMotion && (
     <div key={state.glitchSeq} className="room-glitch" aria-hidden="true" />
   )
 
   if (fallback) {
-    const canRetry = fallback === 'slow' || fallback === 'chosen'
+    const canRetry = fallback === 'slow' || fallback === 'timeout' || fallback === 'chosen'
     const try3d = () => {
       if (fallback === 'slow') setMonitorFps(false)
       setFallback(null)
@@ -152,6 +181,7 @@ export function RoomShell() {
               reducedMotion={reducedMotion}
               monitorFps={monitorFps}
               onSlow={onSlow}
+              onContextLost={onSceneError}
               onFirstFrame={onFirstFrame}
               profile={profile}
               facts={FACTS}

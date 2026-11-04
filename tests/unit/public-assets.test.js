@@ -27,12 +27,13 @@ describe('public assets', () => {
     );
   });
 
-  it('sitemap lists only / and /room', () => {
+  it('sitemap lists /, /room and /privacy', () => {
     const xml = readFileSync(pub('sitemap.xml'), 'utf8');
     const locs = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
     expect(locs).toEqual([
       'https://mukhodobwanevhutalihandivho.netlify.app/',
       'https://mukhodobwanevhutalihandivho.netlify.app/room',
+      'https://mukhodobwanevhutalihandivho.netlify.app/privacy',
     ]);
   });
 

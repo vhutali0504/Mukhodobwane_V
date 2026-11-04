@@ -93,6 +93,7 @@ function RoomScene({
   reducedMotion,
   monitorFps,
   onSlow,
+  onContextLost,
   onFirstFrame,
   profile,
   facts,
@@ -162,7 +163,7 @@ function RoomScene({
 
   // A hidden tab gets no frames, so the first sample after it returns looks
   // slow. Samples near a visibility change do not count.
-  const visibleSince = useRef(0)
+  const visibleSince = useRef(performance.now())
   useEffect(() => {
     const onVis = () => {
       visibleSince.current = performance.now()
@@ -171,6 +172,15 @@ function RoomScene({
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
   }, [])
+
+  // A lost WebGL context (GPU reset, backgrounded tab under memory pressure) leaves a
+  // dead canvas that three cannot fully rebuild, so hand over to the 2D terminal.
+  const lostCleanup = useRef(null)
+  const contextLost = useRef(onContextLost)
+  useEffect(() => {
+    contextLost.current = onContextLost
+  }, [onContextLost])
+  useEffect(() => () => lostCleanup.current?.(), [])
 
   const onDecline = useCallback(
     (api) => {
@@ -197,6 +207,12 @@ function RoomScene({
           gl.domElement.style.touchAction = 'none'
           gl.domElement.style.cursor = 'grab'
           dom.current = gl.domElement
+          const lost = (e) => {
+            e.preventDefault()
+            contextLost.current?.()
+          }
+          gl.domElement.addEventListener('webglcontextlost', lost)
+          lostCleanup.current = () => gl.domElement.removeEventListener('webglcontextlost', lost)
         }}
         onPointerDown={() => {
           // A click on the scene takes keyboard focus off any HUD button, so the

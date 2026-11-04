@@ -29,10 +29,12 @@ export function skipIntro(t, now) {
   return t
 }
 
-export function initRoom({ now = 0, twoD = false } = {}) {
+// `seen`: the visitor already sat through the intro this browser session, so the
+// terminal starts at the menu instead of replaying boot and the scan.
+export function initRoom({ now = 0, twoD = false, seen = false } = {}) {
   const t = createTerminal({ rng: Math.random, now })
   return {
-    t: twoD ? skipIntro(t, now) : t,
+    t: twoD || seen ? skipIntro(t, now) : t,
     pose: 'standing',
     movingTo: 'seated',
     effects: [],
