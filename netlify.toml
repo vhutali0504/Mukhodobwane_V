@@ -8,7 +8,7 @@
   status = 200
 
 # Security headers. The CSP has no 'unsafe-inline' for scripts (the build emits none).
-# style-src allows inline styles because React and three.js set style attributes.
+# style-src is 'self' only: React and three.js set styles through the CSSOM, which CSP does not block.
 # No 'wasm-unsafe-eval': the room loads no WASM decoders.
 [[headers]]
   for = "/*"
