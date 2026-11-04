@@ -182,21 +182,6 @@
   object-fit: cover;
   border-radius: 14px;
 }
-.idcard {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  padding: 12px 14px;
-  background: var(--card);
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(20, 33, 61, 0.12);
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-.idcard span { color: var(--muted); }
 
 /* Footer */
 .site-footer {

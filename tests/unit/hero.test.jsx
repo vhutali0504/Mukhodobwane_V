@@ -13,7 +13,7 @@ afterEach(() => {
 })
 
 describe('Hero', () => {
-  it('shows the name, actions, availability, portrait and ID card', () => {
+  it('shows the name, actions, availability and portrait', () => {
     render(<Hero />)
     const h1 = screen.getByRole('heading', { level: 1 })
     expect(h1).toHaveTextContent('Mukhodobwane')
@@ -24,8 +24,9 @@ describe('Hero', () => {
     expect(cv).toHaveAttribute('download')
     expect(screen.getByText('Open to roles, starting 2027')).toBeInTheDocument()
     expect(screen.getByAltText('Portrait of Mukhodobwane Vhutalihandivho')).toBeInTheDocument()
-    expect(screen.getByText('Co-Founder & Technical Lead')).toBeInTheDocument()
-    expect(screen.getByText('Elevate Digital Solutions')).toBeInTheDocument()
+    // The photo has no caption card over it.
+    expect(document.querySelector('.idcard')).toBeNull()
+    expect(screen.queryByText('Co-Founder & Technical Lead')).not.toBeInTheDocument()
   })
 
   it('shows the first role statically when reduced motion is preferred', () => {

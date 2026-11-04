@@ -24,10 +24,6 @@ export const profile = {
     base: '/images/portrait',
     alt: 'Portrait of Mukhodobwane Vhutalihandivho',
   },
-  idCard: {
-    title: 'Co-Founder & Technical Lead',
-    org: 'Elevate Digital Solutions',
-  },
   stats: [
     { value: 5, label: 'projects built' },
     { value: 5, label: 'programming languages' },

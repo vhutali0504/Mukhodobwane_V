@@ -54,10 +54,6 @@ export default function Hero() {
             fetchPriority="high"
           />
         </picture>
-        <div className="idcard">
-          <strong>{profile.idCard.title}</strong>
-          <span>{profile.idCard.org}</span>
-        </div>
       </div>
     </section>
   )
