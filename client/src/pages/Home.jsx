@@ -11,15 +11,17 @@ import Experience from '../components/formal/Experience.jsx'
 import Skills from '../components/formal/Skills.jsx'
 import Education from '../components/formal/Education.jsx'
 import ContactForm from '../components/formal/ContactForm.jsx'
+import { useSwitchClick } from '../components/layout/ModeTransition.jsx'
 
 export default function Home() {
   useDocumentMeta({
     title: `${profile.name} · Software Developer`,
     description: profile.summary,
   })
+  const toRoom = useSwitchClick('/room')
   return (
     <div className="formal">
-      <TopBar />
+      <TopBar onActivate={toRoom} />
       <main id="main">
         <Hero />
         <Stats />

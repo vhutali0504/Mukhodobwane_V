@@ -6,6 +6,7 @@ export default function NotFound() {
   useDocumentMeta({
     title: `404 · ${profile.name}`,
     description: 'This page does not exist.',
+    noindex: true,
   })
   return (
     <main className="nf">

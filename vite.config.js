@@ -7,6 +7,7 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    manifest: true,
     // The lazy /room scene chunk (three.js, R3F, drei, postprocessing) is about
     // 1.06 MB minified / 290 kB gzip and loads only on /room. Splitting it with
     // manualChunks made the formal entry import the vendor chunks, so it stays

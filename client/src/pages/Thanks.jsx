@@ -6,6 +6,7 @@ export default function Thanks() {
   useDocumentMeta({
     title: `Thanks · ${profile.name}`,
     description: 'Your message was sent.',
+    noindex: true,
   })
   return (
     <main className="page page-narrow">

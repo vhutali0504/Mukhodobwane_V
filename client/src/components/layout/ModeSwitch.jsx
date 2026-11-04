@@ -1,4 +1,5 @@
-// Dark navy pill that links to the 3D room. Task 13 attaches the transition via onActivate.
+// Dark navy pill that links to the 3D room. onActivate plays the glitch transition;
+// without it (or with a modified click) the plain link works.
 export default function ModeSwitch({ onActivate }) {
   return (
     <a className="mode-switch mono" href="/room" onClick={onActivate}>

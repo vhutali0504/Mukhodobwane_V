@@ -1,0 +1,43 @@
+/* Formal/room switch: 3 slice shifts over 450 ms, then a fade to the scene colour.
+   Same slice look as the room's .room-glitch (room.css), which is lazy-loaded with
+   the room and so cannot be shared with the formal page. */
+.glitch-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #020405;
+  opacity: 0;
+}
+.glitch-overlay.is-out {
+  pointer-events: auto;
+  animation: glitch-cover 220ms ease-in 450ms forwards;
+}
+.glitch-overlay.is-in {
+  pointer-events: none;
+  opacity: 1;
+  animation: glitch-uncover 320ms ease-out forwards;
+}
+.glitch-slices {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(transparent 0 40%, rgb(255 69 69 / 0.18) 40% 52%, transparent 52%),
+    repeating-linear-gradient(0deg, rgb(60 255 143 / 0.08) 0 2px, transparent 2px 4px);
+  animation: glitch-slices 450ms steps(1, end) forwards;
+}
+@keyframes glitch-slices {
+  0% { opacity: 1; transform: translateX(-10px); clip-path: inset(18% 0 58% 0); }
+  33% { opacity: 1; transform: translateX(14px); clip-path: inset(52% 0 22% 0); }
+  66% { opacity: 1; transform: translateX(-6px); clip-path: inset(8% 0 80% 0); }
+  100% { opacity: 0; }
+}
+@keyframes glitch-cover {
+  to { opacity: 1; }
+}
+@keyframes glitch-uncover {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glitch-overlay { display: none; }
+}

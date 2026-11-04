@@ -1,6 +1,9 @@
+import { Link } from 'react-router'
 import { profile } from '../../content/profile.js'
+import { useSwitchClick } from './ModeTransition.jsx'
 
 export default function Footer() {
+  const toRoom = useSwitchClick('/room')
   return (
     <footer className="site-footer">
       <p className="site-footer-name">{profile.name}</p>
@@ -16,10 +19,12 @@ export default function Footer() {
           </a>
         </li>
         <li>
-          <a href="/privacy">Privacy</a>
+          <Link to="/privacy">Privacy</Link>
         </li>
         <li>
-          <a href="/room">Enter the room</a>
+          <Link to="/room" onClick={toRoom}>
+            Enter the room
+          </Link>
         </li>
       </ul>
     </footer>

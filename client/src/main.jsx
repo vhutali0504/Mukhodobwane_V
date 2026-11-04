@@ -11,6 +11,11 @@ import '@fontsource/ibm-plex-mono/500.css'
 import './styles/tokens.css'
 import './styles/global.css'
 import { App } from './App.jsx'
+import { initAnalytics } from './lib/analytics.js'
+import { initErrorLogging } from './lib/errorLogging.js'
+
+initAnalytics(import.meta.env.VITE_GOATCOUNTER_CODE)
+initErrorLogging(import.meta.env.VITE_SENTRY_DSN)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -22,6 +22,11 @@ const TIMED_MODES = ['boot', 'scan', 'granted']
 export const FIRST_FRAME_TIMEOUT_MS = 10000
 const now = () => performance.now()
 
+// Test-mode builds only (`vite build --mode test`) plus `?e2e3d=1`: software WebGL is
+// too slow for the FPS monitor and first-frame timeout. Production can never enable it.
+const e2eNoSlowCheck = () =>
+  import.meta.env.MODE === 'test' && new URLSearchParams(window.location.search).get('e2e3d') === '1'
+
 class SceneBoundary extends Component {
   state = { failed: false }
   static getDerivedStateFromError() {
@@ -42,7 +47,7 @@ export function RoomShell() {
   const reducedMotion = useReducedMotion()
   const coarse = useCoarsePointer()
   const [fallback, setFallback] = useState(() => (hasWebGL() ? null : 'nowebgl'))
-  const [monitorFps, setMonitorFps] = useState(true)
+  const [monitorFps, setMonitorFps] = useState(() => !e2eNoSlowCheck())
   const [state, dispatch] = useReducer(roomReducer, fallback, (fb) => initRoom({ now: now(), twoD: !!fb }))
   const { t, pose, movingTo } = state
 
@@ -95,7 +100,7 @@ export function RoomShell() {
     firstFrameSeen.current = true
   }, [])
   useEffect(() => {
-    if (fallback) return
+    if (fallback || e2eNoSlowCheck()) return
     firstFrameSeen.current = false
     let id
     const arm = () => {
