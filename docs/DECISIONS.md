@@ -42,3 +42,7 @@ Every significant decision and why. Source: design spec `docs/superpowers/specs/
 - **Loading progress is real:** two steps (fonts ready, first frame rendered) reported through three's DefaultLoadingManager, so drei's `useProgress` shows 0 / 50 / 100 %.
 - **Cans moved from x -1.25 to about -0.65 from the desk centre, and the chair hides while seated.** In the prototype the chair back hid the cans and they sat outside the seated view; on portrait screens the chair back covered the desk.
 - **Bloom maps the prototype's UnrealBloom (0.75 / 0.55 / 0.55) to pmndrs Bloom with intensity 1.1, radius 0.55, threshold 0.55, mipmapBlur.** pmndrs intensity is weaker at the same number; 1.1 matched the prototype glow by eye. ACES tone mapping runs as the last effect.
+
+## CSP style-src (Task 13 fix)
+
+netlify.toml uses `style-src 'self'` with no `'unsafe-inline'`. A Playwright spec (tests/e2e/csp.spec.js) applies the exact header from netlify.toml to every document and fails on any `securitypolicyviolation` event or CSP console message across the formal page, contact submit, the 3D room and the no-WebGL fallback. It passed without `'unsafe-inline'`, because React and three.js set styles through the CSSOM, which CSP does not block. The `style-src-attr 'unsafe-inline'` fallback was therefore not needed. connect-src also lists the regional Sentry ingest hosts (de, us).
