@@ -23,7 +23,7 @@ describe('content', () => {
   });
 
   it('stats', () => {
-    expect(profile.stats.map((s) => s.value)).toEqual([5, 5, 2, 2024]);
+    expect(profile.stats.map((s) => s.value)).toEqual([5, 5, 2, 2026]);
     expect(profile.stats.map((s) => s.label)).toEqual([
       'projects built', 'programming languages', 'junior students mentored', 'co-founded Elevate Digital Solutions',
     ]);
@@ -35,7 +35,14 @@ describe('content', () => {
 
   it('experience order', () => {
     expect(profile.experience.map((e) => e.org)).toEqual(['Elevate Digital Solutions', 'StudyTrust']);
-    expect(profile.experience.map((e) => e.when)).toEqual(['Jan 2024 – Present', 'Feb 2026 – Present']);
+    expect(profile.experience.map((e) => e.when)).toEqual(['2026 – Present', 'Feb 2026 – Present']);
+  });
+
+  it('EDS started in 2026, so its client project is dated 2026', () => {
+    const tle = profile.projects.find((p) => p.id === 'tle');
+    expect(tle.when).toBe('2026');
+    expect(tle.kind).toMatch(/EDS/);
+    expect(JSON.stringify(profile)).not.toMatch(/2024/);
   });
 
   it('no phone number in content', () => {

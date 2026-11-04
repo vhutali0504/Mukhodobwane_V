@@ -28,13 +28,13 @@ export const profile = {
     { value: 5, label: 'projects built' },
     { value: 5, label: 'programming languages' },
     { value: 2, label: 'junior students mentored' },
-    { value: 2024, label: 'co-founded Elevate Digital Solutions' },
+    { value: 2026, label: 'co-founded Elevate Digital Solutions' },
   ],
   experience: [
     {
       org: 'Elevate Digital Solutions',
       title: 'Co-Founder & Technical Lead',
-      when: 'Jan 2024 – Present',
+      when: '2026 – Present',
       location: 'Johannesburg',
       bullets: [
         'Co-founded a web development agency while completing my final year of studies, and grew it from zero to paying clients through consistent technical delivery.',
@@ -85,7 +85,7 @@ export const profile = {
       id: 'tle',
       title: 'Thusa Lushaka Empowerment – NPO Website',
       kind: 'Client Project (EDS)',
-      when: '2024 – 2025',
+      when: '2026',
       stack: ['React', 'Vite', 'React Router', 'Netlify'],
       bullets: [
         'Designed and built a complete multi-section website for a South African youth NPO (Thusa Lushaka Empowerment, Nzhelele, Limpopo), covering their programmes, annual academic awards and the Miss Thusa Lushaka beauty pageant.',

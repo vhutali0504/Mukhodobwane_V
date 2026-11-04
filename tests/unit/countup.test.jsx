@@ -79,7 +79,7 @@ describe('Stats', () => {
     expect(strip.hidden).toBe(false)
     expect(strip.getAttribute('style') || '').not.toMatch(/opacity|visibility|display/)
     expect(strip.className).not.toMatch(/fade|reveal|hidden/)
-    expect(screen.getByText('2024')).toBeInTheDocument()
+    expect(screen.getByText('2026')).toBeInTheDocument()
   })
 
   it('counts up once when first intersecting, then never restarts', () => {
@@ -104,13 +104,13 @@ describe('Stats', () => {
     act(() => trigger([{ isIntersecting: true }]))
     advanceTo(1200)
     const nums = [...document.querySelectorAll('.stat strong')].map((n) => n.textContent)
-    expect(nums).toEqual(['5', '5', '2', '2024'])
+    expect(nums).toEqual(['5', '5', '2', '2026'])
     expect(disconnect).toHaveBeenCalled()
   })
 
   it('starts counting immediately when IntersectionObserver is missing', () => {
     render(<Stats />)
     advanceTo(1200)
-    expect(document.querySelectorAll('.stat strong')[3]).toHaveTextContent('2024')
+    expect(document.querySelectorAll('.stat strong')[3]).toHaveTextContent('2026')
   })
 })
