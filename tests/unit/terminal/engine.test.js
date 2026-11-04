@@ -153,6 +153,19 @@ describe('section and msg', () => {
     expect(r.t.mode).toBe('menu');
     expect(r.effects).toContain('glitch');
   });
+  it('Left arrow returns to the menu from a section, the quiz and the vault', () => {
+    const section = run(toMenu(), [key('Enter')]).t;
+    expect(section.mode).toBe('section');
+    const r = run(section, [key('ArrowLeft')]);
+    expect(r.t.mode).toBe('menu');
+    expect(r.effects).toContain('glitch');
+    expect(run(toMenu(), [{ type: 'clickLine', index: 7 }, key('ArrowLeft')]).t.mode).toBe('menu');
+    expect(run(toMenu(), [{ type: 'clickLine', index: 8 }, key('ArrowLeft')]).t.mode).toBe('menu');
+  });
+  it('Left arrow on the menu changes nothing', () => {
+    const m = toMenu();
+    expect(run(m, [key('ArrowLeft')]).t).toBe(m);
+  });
   it('Enter on a fact shows the next fact', () => {
     const a = run(toMenu(), [{ type: 'clickLine', index: 6 }]).t;
     const b = run(a, [key('Enter')]).t;

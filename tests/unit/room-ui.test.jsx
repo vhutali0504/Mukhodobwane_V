@@ -158,6 +158,17 @@ describe('room UI', () => {
     expect(within(out).getByText(/ls \.\/about_me/)).toBeInTheDocument()
   })
 
+  it('TerminalFallback: Left arrow in an empty command box returns to the menu', async () => {
+    const user = userEvent.setup()
+    withRouter(<RoomShell />)
+    const input = screen.getByRole('textbox', { name: 'Command' })
+    await user.type(input, 'skills{Enter}')
+    const out = screen.getByRole('region', { name: 'Terminal output' })
+    await user.keyboard('{ArrowLeft}')
+    expect(within(out).queryByText(/SKILLS/)).not.toBeInTheDocument()
+    expect(within(out).getByText(/ls \.\/about_me/)).toBeInTheDocument()
+  })
+
   describe('RoomHud', () => {
     it('standing shows the look-around hint', () => {
       withRouter(<RoomHud pose="standing" />)

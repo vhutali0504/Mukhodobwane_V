@@ -115,11 +115,13 @@ export function TerminalFallback({ t, dispatch, profile, reason = 'nowebgl', onT
     if (cmd) dispatch({ type: 'tapCommand', text: cmd })
   }
 
-  // Same as the 3D terminal: Backspace on an empty command line goes back to the menu.
+  // Same as the 3D terminal: Left arrow or Backspace on an empty command line goes
+  // back to the menu.
   function onKeyDown(e) {
-    if (e.key === 'Backspace' && text === '' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const back = e.key === 'ArrowLeft' || e.key === 'Backspace'
+    if (back && text === '' && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault()
-      dispatch({ type: 'key', key: 'Backspace' })
+      dispatch({ type: 'key', key: e.key })
     }
   }
 

@@ -239,6 +239,8 @@ function onKey(t, c, a) {
     if (t.input) return out({ ...t, input: t.input.slice(0, -1) });
     return t.mode === 'menu' ? out(t) : toMenu(t);
   }
+  // Left arrow is the dedicated "back to menu" key.
+  if (k === 'ArrowLeft') return t.mode === 'menu' || t.input ? out(t) : toMenu(t);
   if (k === 'ArrowDown' || k === 'ArrowUp') {
     const d = k === 'ArrowDown' ? 1 : -1;
     if (t.mode === 'menu') return out({ ...t, sel: wrapIndex(t.sel + d, MENU.length) });

@@ -145,7 +145,7 @@ function drawQuiz(ctx, t, p, geom) {
     ctx.font = mono(25);
     p.line(quizRank(z.score), AMBER);
     p.y = H - 90;
-    p.line('[enter] play again · [backspace] menu', DIM);
+    p.line('[enter] play again · [←] menu', DIM);
     return;
   }
   const q = z.qs[z.i];
@@ -179,7 +179,7 @@ function drawQuiz(ctx, t, p, geom) {
     p.line(ok ? 'correct. +1' : `nope. the answer was ${'ABC'[q.a]}.`, ok ? G : RED);
   }
   p.y = H - 90;
-  p.line(z.picked === null ? 'click an answer or press A / B / C' : '[enter] next question', DIM);
+  p.line(z.picked === null ? 'click an answer or press A / B / C · [←] menu' : '[enter] next question · [←] menu', DIM);
 }
 
 function drawVaultLog(ctx, g, y0) {
@@ -238,7 +238,7 @@ function drawGame(ctx, t, p, geom) {
   });
   drawVaultLog(ctx, g, geom.menuY0);
   p.y = H - 90;
-  p.line('click a word or type it · likeness = letters in the right spot', DIM);
+  p.line('click a word or type it · likeness = letters in the right spot · [←] menu', DIM);
 }
 
 // Glitch slices are copies of the already drawn frame, so a pass must come last.
@@ -284,7 +284,7 @@ export function drawMain(ctx, t, now, { reducedMotion = false, glitchUntil = 0, 
       geom.scrollMax = drawSection(ctx, t, p, profile);
       p.y = H - 90;
       ctx.font = mono(25);
-      p.line('↑↓ scroll · [backspace] menu · [esc] stand up', DIM);
+      p.line('↑↓ scroll · [←] menu · [esc] stand up', DIM);
       break;
     case 'quiz':
       drawQuiz(ctx, t, p, geom);
