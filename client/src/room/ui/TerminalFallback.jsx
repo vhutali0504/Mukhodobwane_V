@@ -115,6 +115,14 @@ export function TerminalFallback({ t, dispatch, profile, reason = 'nowebgl', onT
     if (cmd) dispatch({ type: 'tapCommand', text: cmd })
   }
 
+  // Same as the 3D terminal: Backspace on an empty command line goes back to the menu.
+  function onKeyDown(e) {
+    if (e.key === 'Backspace' && text === '' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault()
+      dispatch({ type: 'key', key: 'Backspace' })
+    }
+  }
+
   return (
     <div className="room-fallback">
       <div className="rt-notice">
@@ -152,6 +160,7 @@ export function TerminalFallback({ t, dispatch, profile, reason = 'nowebgl', onT
           aria-label="Command"
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={onKeyDown}
           maxLength={40}
           autoComplete="off"
           autoCapitalize="off"
