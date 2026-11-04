@@ -37,15 +37,15 @@ export const profile = {
       when: '2026 – Present',
       location: 'Johannesburg',
       bullets: [
-        'Co-founded Elevate Digital Solutions, a freelance web development partnership, while completing my final year of studies, and grew it from zero to paying clients through consistent technical delivery.',
-        'Led end-to-end software delivery: scoping requirements, architecting solutions, writing production code and managing client relationships.',
+        'Co-founded Elevate Digital Solutions, a freelance web development partnership, while completing my final year of studies. Took on real clients, managed projects end to end and delivered production software outside of academic work.',
+        'Led technical delivery across projects: scoping requirements, architecting solutions, writing production code and handling client communication.',
         'Delivered production websites for clients including an NPO (Thusa Lushaka Empowerment), handling ongoing maintenance and post-launch support.',
       ],
     },
     {
       org: 'StudyTrust',
       title: 'Peer Mentor, Formal Bursary Programme',
-      when: 'Feb 2026 – Present',
+      when: 'Feb 2026 – Nov 2026',
       bullets: [
         'Mentored 2 junior Computer Science students through coursework challenges, study planning and academic development as part of a structured bursary programme.',
         'Wrote clear, structured explanations of complex topics (data structures, algorithms and OOP), which also reinforced my own understanding.',
@@ -113,13 +113,14 @@ export const profile = {
     },
     {
       id: 'this-portfolio',
-      title: 'This Portfolio',
+      title: 'Interactive 3D Developer Portfolio',
       kind: 'Personal Project',
       when: '2026',
-      stack: ['React', 'three.js', 'Vite'],
+      stack: ['React', 'Vite', 'React Three Fiber (Three.js)'],
       bullets: [
-        'A formal landing page for recruiters, with a second mode that opens a 3D hacker room built in three.js.',
-        'The room has a typed terminal, a trivia game and a vault-cracking game, all reading from the same content as the formal page.',
+        'Built a dual-mode portfolio: a clean professional page for recruiters and an interactive 3D "hacker room" (React Three Fiber) where visitors sit at a virtual desk and explore my CV on the monitors.',
+        'The 3D room features a typed terminal, a fingerprint-scan boot sequence, a tech trivia quiz and a password-cracking mini-game, with a text-only fallback for low-powered devices and tap controls for mobile.',
+        'Over 190 unit tests (Vitest) and 17 end-to-end tests (Playwright); Lighthouse 100 for performance, accessibility and SEO; Netlify Forms contact with spam protection; CSP headers and zero cookies.',
       ],
       links: [{ label: 'Source', url: 'https://github.com/vhutali0504/Mukhodobwane_V' }],
     },

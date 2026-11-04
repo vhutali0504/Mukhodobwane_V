@@ -35,7 +35,13 @@ describe('content', () => {
 
   it('experience order', () => {
     expect(profile.experience.map((e) => e.org)).toEqual(['Elevate Digital Solutions', 'StudyTrust']);
-    expect(profile.experience.map((e) => e.when)).toEqual(['2026 – Present', 'Feb 2026 – Present']);
+    expect(profile.experience.map((e) => e.when)).toEqual(['2026 – Present', 'Feb 2026 – Nov 2026']);
+  });
+
+  it('portfolio project matches the CV', () => {
+    const p = profile.projects.find((x) => x.id === 'this-portfolio');
+    expect(p.title).toBe('Interactive 3D Developer Portfolio');
+    expect(p.stack).toEqual(['React', 'Vite', 'React Three Fiber (Three.js)']);
   });
 
   it('EDS is described as a freelance web development partnership, never an agency', () => {
