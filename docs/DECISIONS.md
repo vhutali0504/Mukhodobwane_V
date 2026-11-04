@@ -46,3 +46,9 @@ Every significant decision and why. Source: design spec `docs/superpowers/specs/
 ## CSP style-src (Task 13 fix)
 
 netlify.toml uses `style-src 'self'` with no `'unsafe-inline'`. A Playwright spec (tests/e2e/csp.spec.js) applies the exact header from netlify.toml to every document and fails on any `securitypolicyviolation` event or CSP console message across the formal page, contact submit, the 3D room and the no-WebGL fallback. It passed without `'unsafe-inline'`, because React and three.js set styles through the CSSOM, which CSP does not block. The `style-src-attr 'unsafe-inline'` fallback was therefore not needed. connect-src also lists the regional Sentry ingest hosts (de, us).
+
+## 2026-11-04: launch readiness (Task 14)
+
+- **Launch checks are recorded in `docs/LAUNCH_CHECKLIST.md` with evidence; anything needing Netlify or the owner's accounts is listed as "Pending first deploy".** Form delivery, served CSP headers, the GoatCounter beacon and the Sentry event cannot be proven locally.
+- **Lighthouse (desktop, production preview) on `/`: 100 / 100 / 100 / 100.** `/room` scores 72 on performance in headless software rendering; that page is not a target.
+- **No cookie banner.** The site sets no cookies (0 cookies checked in the browser) and GoatCounter is cookie-free.
