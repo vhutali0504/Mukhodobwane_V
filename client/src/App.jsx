@@ -5,6 +5,7 @@ import Home from './pages/Home.jsx'
 import Privacy from './pages/Privacy.jsx'
 import Thanks from './pages/Thanks.jsx'
 import NotFound from './pages/NotFound.jsx'
+import { LoadingScreen } from './room/ui/LoadingScreen.jsx'
 
 const Room = lazy(() => import('./pages/Room.jsx'))
 
@@ -15,7 +16,7 @@ export function App() {
       <Route
         path="/room"
         element={
-          <Suspense fallback={<div role="status">Loading…</div>}>
+          <Suspense fallback={<LoadingScreen />}>
             <Room />
           </Suspense>
         }

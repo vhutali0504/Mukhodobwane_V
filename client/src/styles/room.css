@@ -1,0 +1,220 @@
+/* Hacker room: stage, HUD, touch controls, loading, glitch and the 2D fallback.
+   Colours come only from the room tokens in tokens.css. */
+
+.room {
+  -webkit-user-select: none;
+  user-select: none;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--room-bg);
+  color: var(--room-green);
+  font-family: var(--font-mono);
+  line-height: 1.4;
+}
+
+.room-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ---------- HUD ---------- */
+.room-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.room-hud-bar {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-3);
+  left: var(--s-3);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+.room-hud-bar > * { pointer-events: auto; }
+
+.room-hint {
+  position: absolute;
+  left: 50%;
+  bottom: var(--s-4);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 2 * var(--s-4));
+  padding: var(--s-2) 14px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--room-green);
+  background: var(--room-screen);
+  border: 1px solid var(--room-green-dim);
+  border-radius: 4px;
+}
+.room-hint:empty { display: none; }
+
+/* ---------- buttons ---------- */
+.room-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  min-height: 44px;
+  padding: var(--s-2) var(--s-3);
+  font: 500 13px/1.2 var(--font-mono);
+  color: var(--room-green);
+  background: var(--room-screen);
+  border: 1px solid var(--room-green-dim);
+  border-radius: 4px;
+  text-align: left;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.room-btn:hover { color: var(--room-screen); background: var(--room-green); border-color: var(--room-green); }
+.room-btn:active { transform: scale(0.97); }
+.room-btn:focus-visible { outline: 2px solid var(--focus-room); outline-offset: 2px; }
+.room-btn[aria-current='true'] { border-color: var(--room-green); }
+.room-btn:disabled,
+.room-btn:disabled:hover {
+  color: var(--room-green-dim);
+  background: var(--room-screen);
+  border-style: dashed;
+  border-color: var(--room-green-dim);
+  cursor: not-allowed;
+  transform: none;
+}
+.room-btn-primary { color: var(--room-screen); background: var(--room-green); border-color: var(--room-green); }
+.room-btn-primary:hover { background: var(--room-amber); border-color: var(--room-amber); }
+
+/* ---------- touch controls (below the canvas on coarse pointers) ---------- */
+.room-touch {
+  flex: none;
+  max-height: 45vh;
+  max-height: 45dvh;
+  overflow-y: auto;
+  padding: var(--s-2) var(--s-4) calc(var(--s-2) + env(safe-area-inset-bottom));
+  background: var(--room-screen);
+  border-top: 1px solid var(--room-green-dim);
+}
+.room-touch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.room-touch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(13rem, 100%), 1fr));
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+.room-touch-grid .room-btn { justify-content: flex-start; }
+
+/* ---------- loading ---------- */
+.room-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: var(--s-4);
+  background: var(--room-bg);
+  color: var(--room-green);
+  font: 14px var(--font-mono);
+}
+.room-caret { animation: room-blink 1s steps(1, end) infinite; }
+@keyframes room-blink { 50% { visibility: hidden; } }
+
+/* ---------- glitch: one 320 ms flicker per screen change (never with reduced motion) ---------- */
+.room-glitch {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(transparent 0 40%, rgb(255 69 69 / 0.1) 40% 52%, transparent 52%),
+    repeating-linear-gradient(0deg, rgb(60 255 143 / 0.05) 0 2px, transparent 2px 4px);
+  animation: room-glitch 320ms steps(1, end) forwards;
+}
+@keyframes room-glitch {
+  0% { opacity: 1; transform: translateX(-6px); clip-path: inset(18% 0 58% 0); }
+  25% { opacity: 1; transform: translateX(8px); clip-path: inset(52% 0 22% 0); }
+  50% { opacity: 1; transform: translateX(-3px); clip-path: inset(8% 0 80% 0); }
+  75% { opacity: 1; transform: translateX(4px); clip-path: inset(66% 0 10% 0); }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room-glitch { display: none; }
+  .room-caret { animation: none; }
+  .room-btn { transition: none; }
+}
+
+/* ---------- 2D fallback ---------- */
+.room.room-2d {
+  -webkit-user-select: text;
+  user-select: text;
+  position: static;
+  display: block;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: visible;
+  padding: var(--s-5) var(--s-4);
+}
+.room-2d .room-glitch { position: fixed; }
+.room-fallback {
+  width: min(52rem, 100%);
+  margin: 0 auto;
+  font-size: 14px;
+}
+.rt-notice { margin-bottom: var(--s-4); }
+.rt-notice p { margin: 0 0 var(--s-2); }
+.rt-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.rt-screen {
+  max-height: 55vh;
+  overflow: auto;
+  padding: var(--s-4);
+  background: var(--room-screen);
+  border: 1px solid var(--room-green-dim);
+  border-radius: var(--radius);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rt-screen:focus-visible { outline: 2px solid var(--focus-room); outline-offset: 2px; }
+.rt-screen p { margin: 0; }
+.rt-h { margin: var(--s-2) 0; font-size: 1.1rem; font-weight: 700; }
+.rt-big { font-size: 2.5rem; font-weight: 700; }
+.rt-list { list-style: none; margin: var(--s-2) 0; }
+.rt-amber { color: var(--room-amber); }
+.rt-red { color: var(--room-red); }
+.rt-dim { color: var(--room-green-dim); }
+.rt-form {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+.rt-prompt { color: var(--room-green-dim); white-space: nowrap; }
+.rt-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--s-2) var(--s-3);
+  font: 16px var(--font-mono);
+  color: var(--room-green);
+  background: var(--room-screen);
+  border: 1px solid var(--room-green-dim);
+  border-radius: 4px;
+}
+.rt-input::placeholder { color: var(--room-green-dim); }
+.rt-input:focus-visible { outline: 2px solid var(--focus-room); outline-offset: 2px; }
+@media (max-width: 420px) {
+  .rt-prompt { display: none; }
+}
