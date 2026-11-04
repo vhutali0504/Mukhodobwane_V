@@ -2,6 +2,13 @@
   command = "npm run build"
   publish = "dist"
 
+# A missing hashed file must 404, not fall through to index.html (a stale tab would then
+# fail on the wrong MIME type). Real files are served first because rules are not forced.
+[[redirects]]
+  from = "/assets/*"
+  to = "/404.html"
+  status = 404
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

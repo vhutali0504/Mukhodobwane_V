@@ -5,7 +5,6 @@
 .page h2 { font-size: 1.15rem; margin: var(--s-6) 0 var(--s-2); color: var(--navy); }
 .page p { margin: 0 0 var(--s-4); }
 .page a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
-.page a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
 .nf {
   min-height: 100vh;
@@ -29,3 +28,15 @@
 .nf-dim { color: var(--room-amber); }
 .nf-link { color: var(--room-green); text-decoration: underline; text-underline-offset: 3px; }
 .nf-link:focus-visible { outline: 2px solid var(--focus-room); outline-offset: 3px; }
+
+.nf-actions { display: flex; flex-wrap: wrap; gap: var(--s-4); align-items: center; margin: var(--s-4) 0 0; }
+.nf-btn {
+  font: inherit;
+  padding: var(--s-2) var(--s-4);
+  color: var(--room-screen);
+  background: var(--room-green);
+  border: 1px solid var(--room-green);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.nf-btn:focus-visible { outline: 2px solid var(--focus-room); outline-offset: 3px; }
