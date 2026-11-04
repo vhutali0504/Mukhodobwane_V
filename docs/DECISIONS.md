@@ -20,8 +20,8 @@ Every significant decision and why. Source: design spec `docs/superpowers/specs/
 - **The fifth project is this portfolio, replacing Multi-Theme Developer Portfolio.** Described only by what is actually built; the owner plans to update the CV to match.
 - **Availability line: "Open to roles, starting 2027".** Covers graduate roles, junior developer roles and internships.
 - **Photo: plain head-and-shoulders 4:5 crop, no background removal.** Removes the camera watermark and most of the street background; an honest crop suits the tone. Exported as AVIF/WebP with a JPG fallback.
-- **Old repo `Mukhodobwane_V` stays untouched on GitHub.** Rollback safety and history.
-- **Deploy to a new Netlify preview site first; the owner relinks the existing site at launch via a handover checklist.** The live link stays the same and the owner controls the switch.
+- **Superseded 2026-11-04: the new site replaced the old one on `main` of the existing repo `Mukhodobwane_V`.** The owner chose to use that repo and delete the old site rather than keep a backup branch. The Netlify site already builds from it, so no relink is needed and the live link stays the same. The old code survives only in the local folder `C:\Projects\Mukhodobwane_V` (commit `b52cf3b`).
+- **Phone number removed from git history before the first push (2026-11-04).** The owner asked for it. Plain-text copies in the plan and in tests were replaced by a general phone-number pattern, and every commit was rewritten, so the number lives only inside the published CV PDF.
 - **KSMS row has no links; Thusa Lushaka is named but not linked until its hosting move finishes.** No link is shown that may break or that the owner has not provided.
 - **TryHackMe profile appears only in the room (`contact`, `whoami`), not on the formal page.** The CV does not list it.
 - **Contact email is `mukhodobwanevhutali@gmail.com`, as on the CV.** Single source of truth for contact details.

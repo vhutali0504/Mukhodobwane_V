@@ -28,7 +28,7 @@ Items marked **Pending first deploy** cannot be proven on a laptop. Do each one 
 | Keyboard navigation | Done | See section 3. |
 | Contrast | Done | `npm run check:contrast` printed "All contrast pairs pass" (formal text above 4.5:1, room green 15.59:1, room dim green 5.01:1, focus rings above 10:1). Lighthouse accessibility 100. |
 | Licences | Done | Plus Jakarta Sans and IBM Plex Mono are OFL-1.1 (`license` field in each `@fontsource` package.json), self-hosted, no Google Fonts request. The 3D room uses only primitives built in code, no downloaded models or textures, so there is nothing to licence (`DECISIONS.md`, section "2026-11-04: 3D room (Task 12)"). The portrait is the owner's own photo. |
-| Error, loading and empty states | Done | Errors: the contact form shows inline field errors and a server-error alert with a mailto fallback; a failed `/room` chunk shows a Reload / Back to the formal site message; a 3D failure, timeout, lost WebGL context or low frame rate switches to the 2D terminal. Loading: the room LoadingScreen, and "Sending…" on the form. Empty states: nothing on the site lists dynamic data, so there are none to show. |
+| Error, loading and empty states | Done | Errors: the contact form shows inline field errors and a server-error alert with a mailto fallback; a failed `/room` chunk shows a Reload / Back to the formal site message; a 3D failure, timeout, lost WebGL context or low frame rate switches to the 2D terminal. Loading: the room LoadingScreen, and "Sending..." on the form. Empty states: nothing on the site lists dynamic data, so there are none to show. |
 | Compressed assets | Done | No 3D models or textures at all (the room is built from primitives in code). The portrait ships as AVIF, WebP and JPEG at two sizes. Fonts are self-hosted woff2. Netlify serves text assets compressed. |
 | Client error logging | Done in code | Sentry is loaded only when `VITE_SENTRY_DSN` is set, with no PII and no form input. **Pending first deploy:** see section 5. |
 | Uptime monitoring | Pending | Owner's choice. A free option is UptimeRobot (a 5-minute HTTPS check on the site address with an email alert). Netlify's own status page does not alert on this site. |
@@ -59,13 +59,15 @@ Method: Playwright, 1280x800, pressing Tab repeatedly and reading `document.acti
 - `/room` with WebGL disabled (the 2D fallback): Back to the formal site, the terminal output region (scrollable, focusable), the nine menu buttons, the Command input, Run, then it wraps. Nothing unreachable, all with a focus style. Screenshot: `lh/kb-room-fallback.png`.
 - Not tested by script: the 3D room's own keyboard controls and the HUD "Text-only view" button, because headless Chrome here has no real GPU. The e2e test `flow: sit, scan, open Skills, exit to formal` covers the 3D flow. Try the room with the keyboard once after deploy.
 
-## 4. Handover: switching the existing Netlify site to the new repo
+## 4. Handover: going live on the existing Netlify site
 
-Do these in order. Nothing has been pushed or deployed by the builder.
+Done on 2026-11-04: the new site replaced the old one on `main` of the existing repo `vhutali0504/Mukhodobwane_V` (the owner chose to replace the old site, not keep it). The phone number was removed from all text files and from the whole git history before the push, so it appears only inside the CV PDF. The repo is public, so it contains `docs/assets/cv.pdf` and `docs/assets/photo-original.jpg`. Both are already public on the site by the owner's choice. The old site's code survives only in the local folder `C:\Projects\Mukhodobwane_V`.
 
-1. Create the GitHub repo `vhutali0504/vhutali-portfolio-2026` (empty, no README) and push the `build/v1` branch. The repo will be public, so it will contain `docs/assets/cv.pdf` and `docs/assets/photo-original.jpg`. Both are already public on the site (the CV download and the portrait) by the owner's choice. Check `git log -p` for any plain-text phone number before the first push. Either keep `build/v1` as the branch Netlify builds, or merge it into `main` first.
-2. In Netlify, deploy a new **preview** site from that repo. Open it and click around (`/`, `/room`, CV download).
-3. When happy, open the **existing** site (the one serving `mukhodobwanevhutalihandivho.netlify.app`). Go to Site configuration, Build and deploy, Continuous deployment, and relink the repository to `vhutali0504/vhutali-portfolio-2026`. Set Build command `npm run build` and Publish directory `dist`. (The same values are in `netlify.toml`.)
+Do these in order:
+
+1. Check the Netlify site that serves `mukhodobwanevhutalihandivho.netlify.app` is linked to `vhutali0504/Mukhodobwane_V` and builds the `main` branch. Pushing `main` triggers a deploy.
+2. Under Site configuration, Build and deploy, confirm Build command `npm run build` and Publish directory `dist`, with the Base directory empty. (The same values are in `netlify.toml`, which wins over the dashboard.)
+3. Open the Deploys tab and check that the latest deploy, which the push triggered, succeeded. If it failed, open its log.
 4. Under Site configuration, Environment variables, set these if you have made the accounts (the site works without them):
    - `VITE_GOATCOUNTER_CODE`: your GoatCounter site code.
    - `VITE_SENTRY_DSN`: your Sentry DSN. The security policy (CSP `connect-src` in `netlify.toml`) allows `*.ingest.sentry.io`, `*.ingest.de.sentry.io` and `*.ingest.us.sentry.io`. Check your DSN host matches one of those. If it does not, add your host to `connect-src`.
@@ -77,7 +79,7 @@ Do these in order. Nothing has been pushed or deployed by the builder.
    - Send a test message through the form (tick the consent box). You should land on `/thanks` and receive the email.
    - `/nope` shows the 404 page.
    - Open DevTools (Console) on `/`, on `/room` and while submitting the contact form, and confirm there are **no Content Security Policy errors**.
-8. Leave the old repo `Mukhodobwane_V` on GitHub untouched. It is the rollback.
+8. Rollback: the old site is no longer on GitHub. If you ever need it, its code is in the local folder `C:\Projects\Mukhodobwane_V` (commit `b52cf3b`).
 
 ## 5. Pending first deploy
 

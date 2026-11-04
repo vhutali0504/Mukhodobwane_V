@@ -125,7 +125,7 @@ export const profile = {
         'A formal landing page for recruiters, with a second mode that opens a 3D hacker room built in three.js.',
         'The room has a typed terminal, a trivia game and a vault-cracking game, all reading from the same content as the formal page.',
       ],
-      links: [{ label: 'Source', url: 'https://github.com/vhutali0504/vhutali-portfolio-2026' }],
+      links: [{ label: 'Source', url: 'https://github.com/vhutali0504/Mukhodobwane_V' }],
     },
   ],
   skills: [
