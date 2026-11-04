@@ -8,7 +8,7 @@ export const profile = {
   email: 'mukhodobwanevhutali@gmail.com',
   availability: 'Open to roles, starting 2027',
   summary:
-    'Final-year BSc Computer Science and Informatics student at the University of Johannesburg and co-founder of a web development agency. I build full-stack web apps with secure authentication, and I want to keep growing in a structured, high-intensity environment.',
+    'Final-year BSc Computer Science and Informatics student at the University of Johannesburg and co-founder of a freelance web development partnership. I build full-stack web apps with secure authentication, and I want to keep growing in a structured, high-intensity environment.',
   roles: [
     'Full-stack developer',
     'Co-founder, Elevate Digital Solutions',
@@ -37,7 +37,7 @@ export const profile = {
       when: '2026 – Present',
       location: 'Johannesburg',
       bullets: [
-        'Co-founded a web development agency while completing my final year of studies, and grew it from zero to paying clients through consistent technical delivery.',
+        'Co-founded Elevate Digital Solutions, a freelance web development partnership, while completing my final year of studies, and grew it from zero to paying clients through consistent technical delivery.',
         'Led end-to-end software delivery: scoping requirements, architecting solutions, writing production code and managing client relationships.',
         'Delivered production websites for clients including an NPO (Thusa Lushaka Empowerment), handling ongoing maintenance and post-launch support.',
       ],

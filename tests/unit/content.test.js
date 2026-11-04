@@ -38,6 +38,13 @@ describe('content', () => {
     expect(profile.experience.map((e) => e.when)).toEqual(['2026 – Present', 'Feb 2026 – Present']);
   });
 
+  it('EDS is described as a freelance web development partnership, never an agency', () => {
+    const eds = profile.experience.find((e) => e.org === 'Elevate Digital Solutions');
+    expect(eds.bullets[0]).toMatch(/freelance web development partnership/);
+    expect(profile.summary).toMatch(/freelance web development partnership/);
+    expect(JSON.stringify(profile)).not.toMatch(/agency/i);
+  });
+
   it('EDS started in 2026, so its client project is dated 2026', () => {
     const tle = profile.projects.find((p) => p.id === 'tle');
     expect(tle.when).toBe('2026');
