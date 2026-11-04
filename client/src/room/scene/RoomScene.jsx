@@ -163,8 +163,9 @@ function RoomScene({
 
   // A hidden tab gets no frames, so the first sample after it returns looks
   // slow. Samples near a visibility change do not count.
-  const visibleSince = useRef(performance.now())
+  const visibleSince = useRef(0)
   useEffect(() => {
+    visibleSince.current = performance.now() // the grace period starts at mount
     const onVis = () => {
       visibleSince.current = performance.now()
       strikes.current = 0
