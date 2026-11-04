@@ -106,6 +106,13 @@ describe('ContactForm', () => {
     expect(screen.getByRole('checkbox')).not.toBeChecked()
     expect(screen.getByRole('link', { name: /privacy/i })).toHaveAttribute('href', '/privacy')
   })
+  it('opens the privacy link in a new tab so the typed message survives', () => {
+    setup()
+    const link = screen.getByRole('link', { name: /privacy policy/i })
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(link).toHaveTextContent('(opens in a new tab)')
+  })
   it('shows inline errors via aria-describedby and focuses the first invalid field', async () => {
     const user = userEvent.setup()
     setup()
@@ -137,6 +144,7 @@ describe('ContactForm', () => {
       'Something went wrong sending your message. Please try again or email me directly.',
     )
     expect(alert.querySelector('a[href^="mailto:"]')).not.toBeNull()
+    expect(alert).toHaveFocus()
     expect(screen.getByLabelText('Name')).toHaveValue('Ada')
     expect(screen.getByLabelText('Message')).toHaveValue('Hello there, nice site.')
   })

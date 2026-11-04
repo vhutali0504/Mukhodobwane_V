@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { profile } from '../../content/profile.js'
 import { validateContact } from '../../lib/validateContact.js'
 import { submitContact } from '../../api/contact.js'
@@ -13,6 +13,12 @@ export default function ContactForm() {
   const [pending, setPending] = useState(false)
   const [failed, setFailed] = useState(false)
   const inFlight = useRef(false)
+  const alertRef = useRef(null)
+
+  // Move focus to the error so keyboard users do not lose their place.
+  useEffect(() => {
+    if (failed) alertRef.current?.focus()
+  }, [failed])
 
   const set = (key) => (e) =>
     setValues((v) => ({ ...v, [key]: key === 'consent' ? e.target.checked : e.target.value }))
@@ -124,12 +130,14 @@ export default function ContactForm() {
               {...a11y('consent')}
             />
             <label htmlFor="c-consent">
-              I agree to the <Link to="/privacy">privacy policy</Link> so you can reply to me.
+              I agree to the <a href="/privacy" target="_blank" rel="noopener noreferrer">
+                privacy policy<span className="visually-hidden"> (opens in a new tab)</span>
+              </a> so you can reply to me.
             </label>
             {err('consent')}
           </div>
           {failed && (
-            <p className="form-error" role="alert">
+            <p className="form-error" role="alert" tabIndex={-1} ref={alertRef}>
               Something went wrong sending your message. Please try again or{' '}
               <a href={`mailto:${profile.email}`}>email me directly</a>.
             </p>
