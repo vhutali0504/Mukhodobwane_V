@@ -37,8 +37,14 @@ function startLoadingSteps() {
   return { end, cancel: () => [...pending].forEach(end) }
 }
 
-function FirstFrame({ stepsRef }) {
-  useFrame(() => stepsRef.current?.end('first-frame'))
+function FirstFrame({ stepsRef, onFirstFrame }) {
+  const seen = useRef(false)
+  useFrame(() => {
+    stepsRef.current?.end('first-frame')
+    if (seen.current) return
+    seen.current = true
+    onFirstFrame?.()
+  })
   return null
 }
 
@@ -78,7 +84,19 @@ function mainScreenAction(t, uv, geom) {
   }
 }
 
-function RoomScene({ pose, onArrive, send, termRef, glitchRef, reducedMotion, monitorFps, onSlow, profile, facts }) {
+function RoomScene({
+  pose,
+  onArrive,
+  send,
+  termRef,
+  glitchRef,
+  reducedMotion,
+  monitorFps,
+  onSlow,
+  onFirstFrame,
+  profile,
+  facts,
+}) {
   const geomRef = useRef({ menuY0: 0, lineH: 40, scrollMax: 0 })
   const poseRef = useRef(pose)
   const hovered = useRef(0)
@@ -190,7 +208,7 @@ function RoomScene({ pose, onArrive, send, termRef, glitchRef, reducedMotion, mo
       >
         <color attach="background" args={[BG]} />
         <fogExp2 attach="fog" args={[BG, 0.035]} />
-        <FirstFrame stepsRef={steps} />
+        <FirstFrame stepsRef={steps} onFirstFrame={onFirstFrame} />
         {monitorFps && (
           <PerformanceMonitor bounds={() => [SLOW_FPS, SLOW_FPS + 1]} onDecline={onDecline} onIncline={onIncline} />
         )}

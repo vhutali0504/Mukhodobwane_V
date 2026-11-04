@@ -17,6 +17,9 @@ import { initRoom, roomReducer } from './roomReducer.js'
 const RoomScene = lazy(() => import('./RoomScene.jsx'))
 
 const TIMED_MODES = ['boot', 'scan', 'granted']
+// No rendered frame this long after the 3D view mounts (slow network, chunk or
+// shader compile) counts as a slow device: switch to the 2D terminal.
+export const FIRST_FRAME_TIMEOUT_MS = 10000
 const now = () => performance.now()
 
 class SceneBoundary extends Component {
@@ -83,6 +86,28 @@ export function RoomShell() {
   }, [])
   const onSlow = useCallback(() => goTo2d('slow'), [goTo2d])
   const onSceneError = useCallback(() => goTo2d('error'), [goTo2d])
+  const onTextOnly = useCallback(() => goTo2d('chosen'), [goTo2d])
+
+  // Loading escape hatch. A hidden tab gets no frames, so the clock restarts
+  // instead of firing while the visitor is away.
+  const firstFrameSeen = useRef(false)
+  const onFirstFrame = useCallback(() => {
+    firstFrameSeen.current = true
+  }, [])
+  useEffect(() => {
+    if (fallback) return
+    firstFrameSeen.current = false
+    let id
+    const arm = () => {
+      id = setTimeout(() => {
+        if (firstFrameSeen.current) return
+        if (document.hidden) arm()
+        else onSlow()
+      }, FIRST_FRAME_TIMEOUT_MS)
+    }
+    arm()
+    return () => clearTimeout(id)
+  }, [fallback, onSlow])
 
   const glitch = state.glitchSeq > 0 && !reducedMotion && (
     <div key={state.glitchSeq} className="room-glitch" aria-hidden="true" />
@@ -122,6 +147,7 @@ export function RoomShell() {
               reducedMotion={reducedMotion}
               monitorFps={monitorFps}
               onSlow={onSlow}
+              onFirstFrame={onFirstFrame}
               profile={profile}
               facts={FACTS}
             />
@@ -132,12 +158,12 @@ export function RoomShell() {
           movingTo={movingTo}
           onStand={() => send({ type: 'stand' })}
           onSit={() => send({ type: 'sit' })}
-          onTextOnly={() => goTo2d('chosen')}
+          onTextOnly={onTextOnly}
           controls={!coarse}
         />
         {glitch}
       </div>
-      <TouchControls t={t} dispatch={send} pose={pose} />
+      <TouchControls t={t} dispatch={send} pose={pose} onTextOnly={onTextOnly} />
     </div>
   )
 }

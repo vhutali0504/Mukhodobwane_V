@@ -112,8 +112,9 @@ export function TerminalButtons({ t, dispatch, scroll = true }) {
 }
 
 // On-screen controls below the canvas on touch screens. Hidden on fine pointers,
-// where the keyboard and mouse cover everything.
-export function TouchControls({ t, dispatch, pose = 'seated' }) {
+// where the keyboard and mouse cover everything. `onTextOnly` adds the switch to
+// the 2D view (the only readable view for screen readers on a phone).
+export function TouchControls({ t, dispatch, pose = 'seated', onTextOnly }) {
   const coarse = useCoarsePointer()
   if (!coarse) return null
   return (
@@ -123,6 +124,7 @@ export function TouchControls({ t, dispatch, pose = 'seated' }) {
         <Btn onClick={() => dispatch({ type: 'key', key: 'Escape' })} disabled={pose !== 'seated'}>
           Stand up
         </Btn>
+        {onTextOnly && <Btn onClick={onTextOnly}>Text-only view</Btn>}
         <Link className="room-btn room-link" to="/">
           Exit to formal
         </Link>

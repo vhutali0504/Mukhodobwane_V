@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
-import { render, screen, cleanup, within, renderHook } from '@testing-library/react'
+import { render, screen, cleanup, within, renderHook, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { createTerminal, step } from '../../client/src/room/terminal/engine.js'
@@ -10,8 +10,14 @@ import { TRIVIA } from '../../client/src/content/trivia.js'
 import { VAULT_WORDS } from '../../client/src/content/vaultWords.js'
 
 vi.mock('../../client/src/lib/webgl.js', () => ({ hasWebGL: vi.fn(() => false) }))
+// The real scene needs WebGL. This stand-in never renders a frame, like a
+// device stuck loading.
+vi.mock('../../client/src/room/scene/RoomScene.jsx', () => ({ default: () => null }))
 
-import { RoomShell } from '../../client/src/room/scene/RoomShell.jsx'
+import { hasWebGL } from '../../client/src/lib/webgl.js'
+import { LoadingScreen } from '../../client/src/room/ui/LoadingScreen.jsx'
+
+import { RoomShell, FIRST_FRAME_TIMEOUT_MS } from '../../client/src/room/scene/RoomShell.jsx'
 import { TouchControls } from '../../client/src/room/ui/TouchControls.jsx'
 import { RoomHud } from '../../client/src/room/ui/RoomHud.jsx'
 import { useRoomKeyboard } from '../../client/src/room/ui/useRoomKeyboard.js'
@@ -46,6 +52,8 @@ const button = (name) => screen.getByRole('button', { name })
 afterEach(() => {
   cleanup()
   delete window.matchMedia
+  vi.useRealTimers()
+  hasWebGL.mockReturnValue(false)
 })
 
 describe('room UI', () => {
@@ -219,6 +227,47 @@ describe('room UI', () => {
       const s = roomReducer(initRoom({ now: 0 }), { type: 'pad', now: 1 })
       expect(s.pose).toBe('moving')
       expect(s.t.scanAt).toBe(-1)
+    })
+  })
+
+  describe('escapes from the 3D view', () => {
+    it('touch: a Text-only view button switches to the 2D terminal', async () => {
+      matchCoarse(true)
+      hasWebGL.mockReturnValue(true)
+      withRouter(<RoomShell />)
+      expect(screen.queryByText('Text-only view of the room')).toBeNull()
+      button('Text-only view').click()
+      expect(await screen.findByText('Text-only view of the room')).toBeInTheDocument()
+      expect(screen.getByRole('textbox', { name: 'Command' })).toBeInTheDocument()
+    })
+
+    it('touch controls hide Text-only view when no handler is given', () => {
+      matchCoarse(true)
+      withRouter(<TouchControls t={inMode('menu')} dispatch={vi.fn()} />)
+      expect(screen.queryByRole('button', { name: 'Text-only view' })).toBeNull()
+    })
+
+    it('LoadingScreen always links back to the formal site', () => {
+      withRouter(<LoadingScreen progress={42} />)
+      expect(screen.getByText(/booting room… 42%/)).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Back to the formal site' })).toHaveAttribute('href', '/')
+    })
+
+    it('no first frame within the timeout falls back to 2D', async () => {
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] })
+      hasWebGL.mockReturnValue(true)
+      withRouter(<RoomShell />)
+      expect(screen.queryByRole('textbox', { name: 'Command' })).toBeNull()
+      await act(async () => {
+        vi.advanceTimersByTime(FIRST_FRAME_TIMEOUT_MS - 100)
+      })
+      expect(screen.queryByRole('textbox', { name: 'Command' })).toBeNull()
+      await act(async () => {
+        vi.advanceTimersByTime(200)
+      })
+      expect(screen.getByText('The 3D room is running too slowly on this device')).toBeInTheDocument()
+      expect(button('Try the 3D room anyway')).toBeInTheDocument()
+      expect(screen.getByRole('textbox', { name: 'Command' })).toBeInTheDocument()
     })
   })
 })

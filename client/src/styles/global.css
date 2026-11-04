@@ -77,3 +77,9 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Room loading screen link: shown before room.css loads, on a dark surface. */
+.room-loading-link:focus-visible {
+  outline: 2px solid var(--focus-room);
+  outline-offset: 3px;
+}
