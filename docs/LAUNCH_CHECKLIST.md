@@ -27,7 +27,12 @@ Items marked **Pending first deploy** cannot be proven on a laptop. Do each one 
 | Real contact details | Done | Email `mukhodobwanevhutali@gmail.com`, Johannesburg, GitHub, LinkedIn. The phone number is only inside the CV PDF (unit tests check the site text and pages). |
 | Keyboard navigation | Done | See section 3. |
 | Contrast | Done | `npm run check:contrast` printed "All contrast pairs pass" (formal text above 4.5:1, room green 15.59:1, room dim green 5.01:1, focus rings above 10:1). Lighthouse accessibility 100. |
-| Licences | Done | Plus Jakarta Sans and IBM Plex Mono are OFL-1.1 (`license` field in each `@fontsource` package.json), self-hosted, no Google Fonts request. The 3D room uses only primitives built in code, no downloaded models or textures, so there is nothing to licence (`DECISIONS.md`, 2026-11-04). The portrait is the owner's own photo. |
+| Licences | Done | Plus Jakarta Sans and IBM Plex Mono are OFL-1.1 (`license` field in each `@fontsource` package.json), self-hosted, no Google Fonts request. The 3D room uses only primitives built in code, no downloaded models or textures, so there is nothing to licence (`DECISIONS.md`, section "2026-11-04: 3D room (Task 12)"). The portrait is the owner's own photo. |
+| Error, loading and empty states | Done | Errors: the contact form shows inline field errors and a server-error alert with a mailto fallback; a failed `/room` chunk shows a Reload / Back to the formal site message; a 3D failure, timeout, lost WebGL context or low frame rate switches to the 2D terminal. Loading: the room LoadingScreen, and "Sending…" on the form. Empty states: nothing on the site lists dynamic data, so there are none to show. |
+| Compressed assets | Done | No 3D models or textures at all (the room is built from primitives in code). The portrait ships as AVIF, WebP and JPEG at two sizes. Fonts are self-hosted woff2. Netlify serves text assets compressed. |
+| Client error logging | Done in code | Sentry is loaded only when `VITE_SENTRY_DSN` is set, with no PII and no form input. **Pending first deploy:** see section 5. |
+| Uptime monitoring | Pending | Owner's choice. A free option is UptimeRobot (a 5-minute HTTPS check on the site address with an email alert). Netlify's own status page does not alert on this site. |
+| Third-party script audit | Done | Only two third parties can load, and both are off unless an env var is set: GoatCounter (`gc.zgo.at`, cookie-free) and Sentry (`*.ingest.sentry.io`, `.de`, `.us`). Both are allowed by the CSP in `netlify.toml` and nothing else is. No fonts, CDNs, tag managers or embeds. |
 | No dark patterns, hidden fees or unsupported claims | Done | Nothing is sold, the consent checkbox is unticked, copy traces to the CV. |
 | Data deletion requests | Done | The privacy page tells visitors to email the owner (mailto link with a subject line). |
 
@@ -58,7 +63,7 @@ Method: Playwright, 1280x800, pressing Tab repeatedly and reading `document.acti
 
 Do these in order. Nothing has been pushed or deployed by the builder.
 
-1. Create the GitHub repo `vhutali0504/vhutali-portfolio-2026` (empty, no README) and push the `build/v1` branch. Either keep `build/v1` as the branch Netlify builds, or merge it into `main` first.
+1. Create the GitHub repo `vhutali0504/vhutali-portfolio-2026` (empty, no README) and push the `build/v1` branch. The repo will be public, so it will contain `docs/assets/cv.pdf` and `docs/assets/photo-original.jpg`. Both are already public on the site (the CV download and the portrait) by the owner's choice. Check `git log -p` for any plain-text phone number before the first push. Either keep `build/v1` as the branch Netlify builds, or merge it into `main` first.
 2. In Netlify, deploy a new **preview** site from that repo. Open it and click around (`/`, `/room`, CV download).
 3. When happy, open the **existing** site (the one serving `mukhodobwanevhutalihandivho.netlify.app`). Go to Site configuration, Build and deploy, Continuous deployment, and relink the repository to `vhutali0504/vhutali-portfolio-2026`. Set Build command `npm run build` and Publish directory `dist`. (The same values are in `netlify.toml`.)
 4. Under Site configuration, Environment variables, set these if you have made the accounts (the site works without them):

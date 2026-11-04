@@ -38,6 +38,8 @@ describe('routes and per-page meta', () => {
     const text = document.body.textContent
     expect(text).toContain('Netlify Forms')
     expect(text).toContain('GoatCounter')
+    expect(text).toContain('Sentry')
+    expect(text).toContain('filters form spam')
     expect(text).toContain('no cookies')
     expect(document.querySelector(`a[href^="mailto:${profile.email}"]`)).not.toBeNull()
   })

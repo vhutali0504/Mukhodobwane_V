@@ -31,7 +31,7 @@ export default function Privacy() {
       <h2>Where it is stored</h2>
       <p>
         The form runs on Netlify Forms, so your submission is stored by Netlify, the company that
-        hosts this site. I do not run my own server or database.
+        hosts this site. Netlify also filters form spam. I do not run my own server or database.
       </p>
 
       <h2>How long I keep it</h2>
@@ -51,7 +51,8 @@ export default function Privacy() {
 
       <h2>Error logging</h2>
       <p>
-        If something breaks, only technical errors are logged. They do not include what you typed.
+        If something breaks, a service called Sentry can log the technical error. It is only active
+        if I have set it up, and what you type into the form is not sent to it.
       </p>
 
       <h2>Ask for deletion</h2>

@@ -52,3 +52,10 @@ netlify.toml uses `style-src 'self'` with no `'unsafe-inline'`. A Playwright spe
 - **Launch checks are recorded in `docs/LAUNCH_CHECKLIST.md` with evidence; anything needing Netlify or the owner's accounts is listed as "Pending first deploy".** Form delivery, served CSP headers, the GoatCounter beacon and the Sentry event cannot be proven locally.
 - **Lighthouse (desktop, production preview) on `/`: 100 / 100 / 100 / 100.** `/room` scores 72 on performance in headless software rendering; that page is not a target.
 - **No cookie banner.** The site sets no cookies (0 cookies checked in the browser) and GoatCounter is cookie-free.
+
+## 2026-11-04: final review fixes
+
+- **A failed `/room` chunk shows a room-styled message, not a blank page.** The boundary reloads once on its own (sessionStorage guard) to pick up a new deploy, then offers Reload and a link home. `netlify.toml` answers a missing `/assets/*` file with a 404 instead of `index.html`, so a stale chunk request fails fast.
+- **The room boot sequence plays once per browser session** (`sessionStorage` flag `room-booted`, read in RoomShell and passed to `initRoom`; `engine.js` stays pure). Later visits start at the menu.
+- **In the 2D terminal, `exit` goes to the formal site.** There is no desk to stand up from.
+- **A lost WebGL context and a first-frame timeout both switch to the 2D terminal,** with their own wording instead of "too slowly".
